@@ -1,0 +1,8 @@
+{
+  "name": "world-cup-2026",
+  "version": "1.0.0",
+  "description": "FIFA World Cup 2026 Interactive Globe - Egypt & Arab Teams Focus",
+  "scripts": {
+    "start": "serve -s -l 3000"
+  }
+}
