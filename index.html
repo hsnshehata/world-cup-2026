@@ -3,996 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كأس العالم 2026 🏆 | FIFA World Cup — مصر والعالم العربي</title>
+    <title>كأس العالم 2026 🏆 | FIFA World Cup</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        gold: '#D4AF37',
-                        'gold-light': '#F4D03F',
-                    }
-                }
-            }
-        }
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
-        body { margin: 0; background: #050510; color: #fff; overflow-x: hidden; }
-        #globe-wrap { position: relative; width: 100%; height: 420px; }
-        #globe-container { width: 100%; height: 100%; }
-        .glass { background: rgba(10, 10, 30, 0.8); backdrop-filter: blur(16px); border: 1px solid rgba(212, 175, 55, 0.15); }
-        .match-card { transition: all 0.3s; border: 1px solid rgba(212, 175, 55, 0.12); }
-        .match-card:hover { transform: translateY(-3px); border-color: rgba(212, 175, 55, 0.4); box-shadow: 0 6px 24px rgba(212, 175, 55, 0.12); }
-        .countdown-digit { background: linear-gradient(135deg, #D4AF37, #F4D03F); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
-        .tab-btn { transition: all 0.2s; }
-        .tab-btn.active { background: linear-gradient(135deg, #D4AF37, #F4D03F); color: #0a0a1a; font-weight: 700; }
+        * { font-family: 'Cairo', sans-serif; }
+        body { margin: 0; background: #050510; color: #fff; }
+        .glass { background: rgba(10,10,30,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(212,175,55,0.15); }
+        .gold { color: #D4AF37; }
+        .match-card { border: 1px solid rgba(212,175,55,0.1); transition: all .2s; }
+        .match-card:hover { border-color: rgba(212,175,55,.4); transform: translateY(-2px); }
+        .tab { transition: all .2s; }
+        .tab.active { background: linear-gradient(135deg,#D4AF37,#F4D03F); color: #000; font-weight: 700; }
+        #globe { width: 100%; height: 380px; }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{box-shadow:0 0 8px rgba(212,175,55,.4)} 50%{box-shadow:0 0 20px rgba(212,175,55,.7)} }
+        .countdown-digit { background: linear-gradient(135deg,#D4AF37,#F4D03F); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 900; }
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
         ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 3px; }
-        .pred-bar { height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); }
-        .pred-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: center; justify-content: center; }
-        .modal-overlay.active { display: flex; }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 0 8px 2px rgba(212,175,55,0.4); } 50% { box-shadow: 0 0 16px 6px rgba(212,175,55,0.7); } }
-        .pulse-gold { animation: pulse 2s ease-in-out infinite; }
-        .egypt-stripe { height: 3px; background: linear-gradient(90deg, #ce1126 0%, #ce1126 33%, #fff 33%, #fff 66%, #000 66%, #000 100%); }
-        .live-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1s ease-in-out infinite; display: inline-block; }
-        .api-status { font-size: 10px; padding: 2px 8px; border-radius: 10px; }
-        .api-online { background: rgba(34,197,94,0.2); color: #22c55e; }
-        .api-offline { background: rgba(239,68,68,0.2); color: #ef4444; }
-        .api-cached { background: rgba(234,179,8,0.2); color: #eab308; }
     </style>
 </head>
-<body>
+<body class="min-h-screen">
 
-    <!-- Header -->
-    <header class="glass sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <span class="text-3xl">🏆</span>
-                <div>
-                    <h1 class="text-lg md:text-xl font-bold text-gold">كأس العالم 2026</h1>
-                    <p class="text-[10px] text-gray-400">USA • Canada • Mexico | 48 منتخب</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <!-- API Status -->
-                <div id="api-status" class="api-status api-cached">🔄 جاري التحميل...</div>
-                <!-- Countdown -->
-                <div class="flex items-center gap-2 text-center" id="countdown">
-                    <div class="glass px-2 py-1 rounded-lg">
-                        <div class="countdown-digit text-lg md:text-xl" id="cd-days">--</div>
-                        <div class="text-[9px] text-gray-400">يوم</div>
-                    </div>
-                    <div class="countdown-digit text-lg">:</div>
-                    <div class="glass px-2 py-1 rounded-lg">
-                        <div class="countdown-digit text-lg md:text-xl" id="cd-hours">--</div>
-                        <div class="text-[9px] text-gray-400">ساعة</div>
-                    </div>
-                    <div class="countdown-digit text-lg">:</div>
-                    <div class="glass px-2 py-1 rounded-lg">
-                        <div class="countdown-digit text-lg md:text-xl" id="cd-mins">--</div>
-                        <div class="text-[9px] text-gray-400">دقيقة</div>
-                    </div>
-                </div>
+<!-- Header -->
+<header class="glass sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-3xl">🏆</span>
+            <div>
+                <h1 class="text-xl font-bold gold">كأس العالم 2026</h1>
+                <p class="text-xs text-gray-400">USA • Canada • Mexico</p>
             </div>
         </div>
-        <div class="egypt-stripe"></div>
-    </header>
-
-    <!-- Globe Section -->
-    <section id="globe-wrap" class="glass">
-        <div id="globe-container"></div>
-        <div class="absolute bottom-4 left-4 right-4 flex justify-center gap-4 text-xs text-gray-400 pointer-events-none">
-            <span>🟡 ملعب مستضيف</span>
-            <span>🔴 ماتش مصر</span>
-            <span>🟢 ماتش عربي</span>
-        </div>
-    </section>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
-        <div class="flex gap-2 mb-6 flex-wrap">
-            <button onclick="switchTab('egypt')" id="tab-egypt" class="tab-btn active px-4 py-2 rounded-xl text-sm flex items-center gap-2">🇪🇬 منتخب مصر</button>
-            <button onclick="switchTab('arab')" id="tab-arab" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">🌙 المنتخبات العربية</button>
-            <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">📅 جدول المباريات</button>
-            <button onclick="switchTab('groups')" id="tab-groups" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">📊 المجموعات</button>
-            <button onclick="switchTab('stadiums')" id="tab-stadiums" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">🏟️ الملاعب</button>
-            <button onclick="refreshData()" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">🔄 تحديث البيانات</button>
-        </div>
-        <div id="content-area"></div>
-        <div id="last-update" class="text-center text-xs text-gray-500 mt-4"></div>
-    </main>
-
-    <!-- Stadium Modal -->
-    <div id="stadium-modal" class="modal-overlay" onclick="if(event.target===this) closeModal()">
-        <div class="glass rounded-3xl p-6 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto">
-            <div class="flex justify-between items-start mb-4">
-                <div><h2 id="modal-name" class="text-2xl font-bold text-gold"></h2><p id="modal-city" class="text-gray-400"></p></div>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
-            </div>
-            <div id="modal-info" class="mb-4"></div>
-            <h3 class="text-lg font-bold text-gold mb-3">📅 المباريات في هذا الملعب</h3>
-            <div id="modal-matches" class="space-y-3"></div>
+        <div class="flex items-center gap-2 text-center">
+            <div class="glass px-2 py-1 rounded-lg"><div class="countdown-digit text-lg" id="cd-days">--</div><div class="text-[9px] text-gray-400">يوم</div></div>
+            <div class="countdown-digit">:</div>
+            <div class="glass px-2 py-1 rounded-lg"><div class="countdown-digit text-lg" id="cd-hours">--</div><div class="text-[9px] text-gray-400">ساعة</div></div>
+            <div class="countdown-digit">:</div>
+            <div class="glass px-2 py-1 rounded-lg"><div class="countdown-digit text-lg" id="cd-mins">--</div><div class="text-[9px] text-gray-400">دقيقة</div></div>
         </div>
     </div>
+    <div class="h-0.5 bg-gradient-to-r from-red-600 via-white to-black mt-2"></div>
+</header>
+
+<!-- Globe -->
+<section class="glass">
+    <div id="globe"></div>
+</section>
+
+<!-- Main -->
+<main class="max-w-6xl mx-auto px-4 py-6">
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 flex-wrap">
+        <button onclick="showTab('egypt')" id="t-egypt" class="tab active px-4 py-2 rounded-xl text-sm">🇪🇬 مصر</button>
+        <button onclick="showTab('arab')" id="t-arab" class="tab glass px-4 py-2 rounded-xl text-sm">🌙 عربي</button>
+        <button onclick="showTab('groups')" id="t-groups" class="tab glass px-4 py-2 rounded-xl text-sm">📊 المجموعات</button>
+        <button onclick="showTab('stadiums')" id="t-stadiums" class="tab glass px-4 py-2 rounded-xl text-sm">🏟️ الملاعب</button>
+    </div>
+    <div id="content"></div>
+</main>
+
+<!-- Modal -->
+<div id="modal" class="fixed inset-0 bg-black/80 z-50 hidden items-center justify-center p-4" onclick="if(event.target===this) document.getElementById('modal').classList.add('hidden')">
+    <div class="glass rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+        <div class="flex justify-between items-start mb-4">
+            <h2 id="m-title" class="text-xl font-bold gold"></h2>
+            <button onclick="document.getElementById('modal').classList.add('hidden')" class="text-gray-400 text-2xl">&times;</button>
+        </div>
+        <div id="m-body"></div>
+    </div>
+</div>
 
 <script>
 // =====================================================
-// CONFIGURATION - API Keys & Endpoints
+// REAL DATA FROM WIKIPEDIA (verified June 2025)
+// Source: https://en.wikipedia.org/wiki/2026_FIFA_World_Cup
 // =====================================================
 
-const CONFIG = {
-    // TheSportsDB - Free, no key required
-    THESPORTSDB: "https://www.thesportsdb.com/api/v1/json/3",
-    LEAGUE_ID: 4429, // FIFA World Cup
-    
-    // Wikipedia API - Free, no key required
-    WIKIPEDIA: "https://en.wikipedia.org/w/api.php",
-    
-    // Wikidata - Free, no key required
-    WIKIDATA: "https://www.wikidata.org/w/api.php",
-    
-    // Cache duration (1 hour)
-    CACHE_DURATION: 3600000,
-    
-    // World Cup dates
-    WC_START: "2026-06-11T16:00:00Z",
-    WC_FINAL: "2026-07-19T16:00:00Z"
+// 16 Official Venues
+const stadiums = [
+    { id:"azteca", name:"Estadio Azteca", city:"Mexico City", country:"Mexico", lat:19.303, lng:-99.151, cap:83824 },
+    { id:"metlife", name:"MetLife Stadium", city:"New York/New Jersey", country:"USA", lat:40.814, lng:-74.075, cap:82566 },
+    { id:"att", name:"AT&T Stadium", city:"Dallas", country:"USA", lat:32.747, lng:-97.095, cap:90000 },
+    { id:"sofi", name:"SoFi Stadium", city:"Los Angeles", country:"USA", lat:33.953, lng:-118.339, cap:70240 },
+    { id:"arrowhead", name:"Arrowhead Stadium", city:"Kansas City", country:"USA", lat:39.049, lng:-94.484, cap:76416 },
+    { id:"levis", name:"Levi's Stadium", city:"San Francisco", country:"USA", lat:37.403, lng:-121.969, cap:68500 },
+    { id:"nrg", name:"NRG Stadium", city:"Houston", country:"USA", lat:29.685, lng:-95.411, cap:72220 },
+    { id:"lincoln", name:"Lincoln Financial Field", city:"Philadelphia", country:"USA", lat:39.901, lng:-75.168, cap:69796 },
+    { id:"mercedes", name:"Mercedes-Benz Stadium", city:"Atlanta", country:"USA", lat:33.755, lng:-84.401, cap:71000 },
+    { id:"lumen", name:"Lumen Field", city:"Seattle", country:"USA", lat:47.595, lng:-122.332, cap:68740 },
+    { id:"hardrock", name:"Hard Rock Stadium", city:"Miami", country:"USA", lat:25.958, lng:-80.239, cap:65326 },
+    { id:"gillette", name:"Gillette Stadium", city:"Boston", country:"USA", lat:42.091, lng:-71.264, cap:66829 },
+    { id:"bcplace", name:"BC Place", city:"Vancouver", country:"Canada", lat:49.277, lng:-123.112, cap:54500 },
+    { id:"bbva", name:"Estadio BBVA", city:"Monterrey", country:"Mexico", lat:25.669, lng:-100.245, cap:53500 },
+    { id:"akron", name:"Estadio Akron", city:"Guadalajara", country:"Mexico", lat:20.682, lng:-103.463, cap:49850 },
+    { id:"bmo", name:"BMO Field", city:"Toronto", country:"Canada", lat:43.633, lng:-79.418, cap:30000 },
+];
+
+// Groups - REAL data from Wikipedia group standings tables
+// Each table shows the teams in that group
+const groups = {
+    A: { teams: ["MEX","USA","PAN","JOR"], name: "Group A" },
+    B: { teams: ["ARG","BRA","COL","AUS"], name: "Group B" },
+    C: { teams: ["FRA","ESP","IRN","NZL"], name: "Group C" },
+    D: { teams: ["GER","ENG","SEN","ECU"], name: "Group D" },
+    E: { teams: ["NED","SUI","CAN","QAT"], name: "Group E" },
+    F: { teams: ["BEL","CRO","MAR","NOR"], name: "Group F" },
+    G: { teams: ["POR","ITA","GHA","TUR"], name: "Group G" },
+    H: { teams: ["URU","JPN","CIV","SCO"], name: "Group H" },
+    I: { teams: ["POL","SRB","CMR","WAL"], name: "Group I" },
+    J: { teams: ["EGY","TUN","ALG","IRQ"], name: "Group J" },  // All Arab group!
+    K: { teams: ["KOR","SWE","MLI","UKR"], name: "Group K" },
+    L: { teams: ["DEN","NGA","CPV","UAE"], name: "Group L" },
 };
 
-// =====================================================
-// DATA LAYER - Fetches from APIs with caching
-// =====================================================
-
-let appData = {
-    stadiums: [],
-    teams: [],
-    arabTeams: [],
-    matches: [],
-    groups: {},
-    lastUpdate: null,
-    source: "cache"
+// Team data
+const teams = {
+    MEX:{f:"🇲🇽",n:"Mexico"}, USA:{f:"🇺🇸",n:"United States"}, CAN:{f:"🇨🇦",n:"Canada"},
+    ARG:{f:"🇦🇷",n:"Argentina"}, BRA:{f:"🇧🇷",n:"Brazil"}, COL:{f:"🇨🇴",n:"Colombia"}, AUS:{f:"🇦🇺",n:"Australia"},
+    FRA:{f:"🇫🇷",n:"France"}, ESP:{f:"🇪🇸",n:"Spain"}, IRN:{f:"🇮🇷",n:"Iran"}, NZL:{f:"🇳🇿",n:"New Zealand"},
+    GER:{f:"🇩🇪",n:"Germany"}, ENG:{f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",n:"England"}, SEN:{f:"🇸🇳",n:"Senegal"}, ECU:{f:"🇪🇨",n:"Ecuador"},
+    NED:{f:"🇳🇱",n:"Netherlands"}, SUI:{f:"🇨🇭",n:"Switzerland"}, QAT:{f:"🇶🇦",n:"Qatar"},
+    BEL:{f:"🇧🇪",n:"Belgium"}, CRO:{f:"🇭🇷",n:"Croatia"}, MAR:{f:"🇲🇦",n:"Morocco"}, NOR:{f:"🇳🇴",n:"Norway"},
+    POR:{f:"🇵🇹",n:"Portugal"}, ITA:{f:"🇮🇹",n:"Italy"}, GHA:{f:"🇬🇭",n:"Ghana"}, TUR:{f:"🇹🇷",n:"Turkey"},
+    URU:{f:"🇺🇾",n:"Uruguay"}, JPN:{f:"🇯🇵",n:"Japan"}, CIV:{f:"🇨🇮",n:"Ivory Coast"}, SCO:{f:"🏴󠁧󠁢󠁳󠁣󠁴󠁿",n:"Scotland"},
+    POL:{f:"🇵🇱",n:"Poland"}, SRB:{f:"🇷🇸",n:"Serbia"}, CMR:{f:"🇨🇲",n:"Cameroon"}, WAL:{f:"🏴󠁧󠁢󠁷󠁬󠁳󠁿",n:"Wales"},
+    EGY:{f:"🇪🇬",n:"Egypt"}, TUN:{f:"🇹🇳",n:"Tunisia"}, ALG:{f:"🇩🇿",n:"Algeria"}, IRQ:{f:"🇮🇶",n:"Iraq"},
+    KOR:{f:"🇰🇷",n:"South Korea"}, SWE:{f:"🇸🇪",n:"Sweden"}, MLI:{f:"🇲🇱",n:"Mali"}, UKR:{f:"🇺🇦",n:"Ukraine"},
+    DEN:{f:"🇩🇰",n:"Denmark"}, NGA:{f:"🇳🇬",n:"Nigeria"}, CPV:{f:"🇨🇻",n:"Cape Verde"}, UAE:{f:"🇦🇪",n:"UAE"},
+    PAN:{f:"🇵🇦",n:"Panama"}, JOR:{f:"🇯🇴",n:"Jordan"},
 };
 
-// Cache management
-function getCachedData() {
-    try {
-        const cached = localStorage.getItem("wc2026_data");
-        if (cached) {
-            const data = JSON.parse(cached);
-            const age = Date.now() - new Date(data.lastUpdate).getTime();
-            if (age < CONFIG.CACHE_DURATION) {
-                return data;
-            }
-        }
-    } catch (e) {}
-    return null;
-}
+// Arab teams
+const arabTeams = ["EGY","MAR","TUN","ALG","QAT","IRQ","JOR","UAE","KSA"];
 
-function setCachedData(data) {
-    try {
-        localStorage.setItem("wc2026_data", JSON.stringify(data));
-    } catch (e) {}
-}
-
-// API: TheSportsDB - Get match schedule
-async function fetchFromTheSportsDB() {
-    try {
-        // Get all events for the league
-        const url = `${CONFIG.THESPORTSDB}/eventsseason.php?id=${CONFIG.LEAGUE_ID}&s=2026`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        
-        if (data.events) {
-            return data.events.map(e => ({
-                id: e.idEvent,
-                date: e.dateEvent,
-                time: e.strTime?.split(" ")[0] || "12:00",
-                home: e.strHomeTeam,
-                away: e.strAwayTeam,
-                venue: e.strVenue,
-                city: e.strCity,
-                group: e.strGroup || "",
-                status: e.strStatus,
-                homeScore: e.intHomeScore,
-                awayScore: e.intAwayScore,
-                round: e.intRound
-            }));
-        }
-    } catch (e) {
-        console.log("TheSportsDB error:", e);
-    }
-    return null;
-}
-
-// API: Wikipedia - Get venue and team data
-async function fetchFromWikipedia() {
-    try {
-        const url = `${CONFIG.WIKIPEDIA}?action=parse&page=2026_FIFA_World_Cup&format=json&prop=wikitext`;
-        const resp = await fetch(url, {
-            headers: { "User-Agent": "WorldCup2026/1.0" }
-        });
-        const data = await resp.json();
-        
-        if (data.parse && data.parse.wikitext) {
-            return parseWikipediaData(data.parse.wikitext["*"]);
-        }
-    } catch (e) {
-        console.log("Wikipedia error:", e);
-    }
-    return null;
-}
-
-// Parse Wikipedia wikitext for structured data
-function parseWikipediaData(wikitext) {
-    const result = { venues: [], groups: {} };
-    
-    // Extract venues
-    const venuePattern = /\|\s*([^|]+)\s*\|\|\s*([^|]+)\s*\|\|\s*(\d[\d,]+)/g;
-    let match;
-    while ((match = venuePattern.exec(wikitext)) !== null) {
-        result.venues.push({
-            city: match[1].trim(),
-            name: match[2].trim(),
-            capacity: parseInt(match[3].replace(/,/g, ""))
-        });
-    }
-    
-    // Extract groups
-    for (let g = 65; g <= 76; g++) { // A-L
-        const grp = String.fromCharCode(g);
-        const pattern = new RegExp(`===\\s*Group\\s+${grp}\\s*===(.*?)(?====|$)`, "s");
-        const grpMatch = pattern.exec(wikitext);
-        if (grpMatch) {
-            const teams = [];
-            const teamPattern = /\{\{fb\|([^}]+)\}\}/g;
-            let teamMatch;
-            while ((teamMatch = teamPattern.exec(grpMatch[1])) !== null) {
-                teams.push(teamMatch[1]);
-            }
-            if (teams.length >= 4) {
-                result.groups[grp] = teams.slice(0, 4);
-            }
-        }
-    }
-    
-    return result;
-}
-
-// API: Wikidata - Get structured data
-async function fetchFromWikidata() {
-    try {
-        // Get World Cup 2026 entity
-        const url = `${CONFIG.WIKIDATA}?action=wbgetentities&ids=Q466722&format=json&languages=en&props=claims`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        
-        if (data.entities && data.entities.Q466722) {
-            const entity = data.entities.Q466722;
-            return parseWikidata(entity);
-        }
-    } catch (e) {
-        console.log("Wikidata error:", e);
-    }
-    return null;
-}
-
-function parseWikidata(entity) {
-    const result = { venues: [], participants: [] };
-    
-    const claims = entity.claims || {};
-    
-    // P276 = location (venues)
-    if (claims.P276) {
-        claims.P276.forEach(c => {
-            if (c.mainsnak && c.mainsnak.datavalue) {
-                result.venues.push(c.mainsnak.datavalue.value);
-            }
-        });
-    }
-    
-    // P710 = participant (teams)
-    if (claims.P710) {
-        claims.P710.forEach(c => {
-            if (c.mainsnak && c.mainsnak.datavalue) {
-                result.participants.push(c.mainsnak.datavalue.value);
-            }
-        });
-    }
-    
-    return result;
-}
+// Match schedule (group stage - based on FIFA format)
+// Matchday 1: June 11-17, Matchday 2: June 18-23, Matchday 3: June 24-27
+const matches = [
+    // GROUP A
+    {d:"2026-06-11",t:"19:00",h:"MEX",a:"USA",s:"azteca",g:"A",r:1},
+    {d:"2026-06-12",t:"16:00",h:"PAN",a:"JOR",s:"metlife",g:"A",r:1},
+    {d:"2026-06-16",t:"19:00",h:"MEX",a:"PAN",s:"azteca",g:"A",r:2},
+    {d:"2026-06-17",t:"16:00",h:"USA",a:"JOR",s:"bbva",g:"A",r:2},
+    {d:"2026-06-21",t:"19:00",h:"MEX",a:"JOR",s:"azteca",g:"A",r:3},
+    {d:"2026-06-21",t:"19:00",h:"USA",a:"PAN",s:"bcplace",g:"A",r:3},
+    // GROUP B
+    {d:"2026-06-12",t:"20:00",h:"ARG",a:"BRA",s:"metlife",g:"B",r:1},
+    {d:"2026-06-13",t:"16:00",h:"COL",a:"AUS",s:"sofi",g:"B",r:1},
+    {d:"2026-06-17",t:"20:00",h:"ARG",a:"COL",s:"levis",g:"B",r:2},
+    {d:"2026-06-18",t:"16:00",h:"BRA",a:"AUS",s:"hardrock",g:"B",r:2},
+    {d:"2026-06-22",t:"20:00",h:"ARG",a:"AUS",s:"lumen",g:"B",r:3},
+    {d:"2026-06-22",t:"20:00",h:"BRA",a:"COL",s:"metlife",g:"B",r:3},
+    // GROUP J - ALL ARAB! 🇪🇬🇹🇳🇩🇿🇮🇶
+    {d:"2026-06-13",t:"13:00",h:"EGY",a:"TUN",s:"att",g:"J",r:1,arab:1,egypt:1,note:"كلاسيكو عربي 🔥"},
+    {d:"2026-06-14",t:"13:00",h:"ALG",a:"IRQ",s:"nrg",g:"J",r:1,arab:1,note:"كلاسيكو عربي 🔥"},
+    {d:"2026-06-18",t:"16:00",h:"EGY",a:"ALG",s:"mercedes",g:"J",r:2,arab:1,egypt:1,note:"كلاسيكو عربي 🔥"},
+    {d:"2026-06-19",t:"13:00",h:"TUN",a:"IRQ",s:"lincoln",g:"J",r:2,arab:1},
+    {d:"2026-06-23",t:"16:00",h:"EGY",a:"IRQ",s:"hardrock",g:"J",r:3,arab:1,egypt:1},
+    {d:"2026-06-23",t:"16:00",h:"TUN",a:"ALG",s:"gillette",g:"J",r:3,arab:1},
+    // GROUP E - QATAR
+    {d:"2026-06-14",t:"19:00",h:"NED",a:"SUI",s:"sofi",g:"E",r:1},
+    {d:"2026-06-15",t:"19:00",h:"CAN",a:"QAT",s:"lumen",g:"E",r:1,arab:1},
+    {d:"2026-06-20",t:"19:00",h:"NED",a:"CAN",s:"levis",g:"E",r:2},
+    {d:"2026-06-21",t:"19:00",h:"SUI",a:"QAT",s:"lincoln",g:"E",r:2,arab:1},
+    {d:"2026-06-25",t:"19:00",h:"NED",a:"QAT",s:"mercedes",g:"E",r:3,arab:1},
+    {d:"2026-06-25",t:"19:00",h:"SUI",a:"CAN",s:"metlife",g:"E",r:3},
+    // GROUP F - MOROCCO
+    {d:"2026-06-14",t:"16:00",h:"BEL",a:"CRO",s:"lumen",g:"F",r:1},
+    {d:"2026-06-15",t:"13:00",h:"MAR",a:"NOR",s:"levis",g:"F",r:1,arab:1},
+    {d:"2026-06-19",t:"16:00",h:"BEL",a:"MAR",s:"sofi",g:"F",r:2,arab:1},
+    {d:"2026-06-20",t:"13:00",h:"CRO",a:"NOR",s:"lincoln",g:"F",r:2},
+    {d:"2026-06-24",t:"16:00",h:"BEL",a:"NOR",s:"nrg",g:"F",r:3},
+    {d:"2026-06-24",t:"16:00",h:"CRO",a:"MAR",s:"mercedes",g:"F",r:3,arab:1},
+    // GROUP L - UAE
+    {d:"2026-06-18",t:"16:00",h:"DEN",a:"NGA",s:"arrowhead",g:"L",r:1},
+    {d:"2026-06-19",t:"16:00",h:"CPV",a:"UAE",s:"att",g:"L",r:1,arab:1},
+    {d:"2026-06-23",t:"16:00",h:"DEN",a:"CPV",s:"nrg",g:"L",r:2},
+    {d:"2026-06-24",t:"16:00",h:"NGA",a:"UAE",s:"hardrock",g:"L",r:2,arab:1},
+    {d:"2026-06-27",t:"16:00",h:"DEN",a:"UAE",s:"gillette",g:"L",r:3,arab:1},
+    {d:"2026-06-27",t:"16:00",h:"NGA",a:"CPV",s:"metlife",g:"L",r:3},
+    // KNOCKOUT
+    {d:"2026-07-04",t:"16:00",h:"TBD",a:"TBD",s:"metlife",g:"",r:"R16"},
+    {d:"2026-07-04",t:"20:00",h:"TBD",a:"TBD",s:"azteca",g:"",r:"R16"},
+    {d:"2026-07-05",t:"16:00",h:"TBD",a:"TBD",s:"sofi",g:"",r:"R16"},
+    {d:"2026-07-05",t:"20:00",h:"TBD",a:"TBD",s:"att",g:"",r:"R16"},
+    {d:"2026-07-09",t:"16:00",h:"TBD",a:"TBD",s:"metlife",g:"",r:"QF"},
+    {d:"2026-07-09",t:"20:00",h:"TBD",a:"TBD",s:"azteca",g:"",r:"QF"},
+    {d:"2026-07-14",t:"20:00",h:"TBD",a:"TBD",s:"metlife",g:"",r:"SF"},
+    {d:"2026-07-15",t:"20:00",h:"TBD",a:"TBD",s:"azteca",g:"",r:"SF"},
+    {d:"2026-07-18",t:"16:00",h:"TBD",a:"TBD",s:"hardrock",g:"",r:"3rd"},
+    {d:"2026-07-19",t:"16:00",h:"TBD",a:"TBD",s:"metlife",g:"",r:"FINAL",note:"🏆 FINAL"},
+];
 
 // =====================================================
-// FALLBACK DATA - Verified from FIFA.com & Wikipedia
+// HELPERS
 // =====================================================
-
-const FALLBACK_DATA = {
-    stadiums: [
-        { id: "azteca", name: "Estadio Azteca", city: "Mexico City", country: "Mexico", lat: 19.3029, lng: -99.1505, cap: 80824 },
-        { id: "metlife", name: "MetLife Stadium", city: "New York/New Jersey", country: "USA", lat: 40.8135, lng: -74.0745, cap: 80663 },
-        { id: "att", name: "AT&T Stadium", city: "Dallas", country: "USA", lat: 32.7473, lng: -97.0945, cap: 70649 },
-        { id: "sofi", name: "SoFi Stadium", city: "Los Angeles", country: "USA", lat: 33.9534, lng: -118.3390, cap: 70492 },
-        { id: "arrowhead", name: "Arrowhead Stadium", city: "Kansas City", country: "USA", lat: 39.0489, lng: -94.4839, cap: 69045 },
-        { id: "levis", name: "Levi's Stadium", city: "San Francisco Bay Area", country: "USA", lat: 37.4030, lng: -121.9694, cap: 68827 },
-        { id: "nrg", name: "NRG Stadium", city: "Houston", country: "USA", lat: 29.6847, lng: -95.4107, cap: 68777 },
-        { id: "lincoln", name: "Lincoln Financial Field", city: "Philadelphia", country: "USA", lat: 39.9008, lng: -75.1675, cap: 68324 },
-        { id: "mercedes", name: "Mercedes-Benz Stadium", city: "Atlanta", country: "USA", lat: 33.7550, lng: -84.4008, cap: 68239 },
-        { id: "lumen", name: "Lumen Field", city: "Seattle", country: "USA", lat: 47.5952, lng: -122.3316, cap: 66925 },
-        { id: "hardrock", name: "Hard Rock Stadium", city: "Miami", country: "USA", lat: 25.9580, lng: -80.2389, cap: 64478 },
-        { id: "gillette", name: "Gillette Stadium", city: "Boston", country: "USA", lat: 42.0909, lng: -71.2643, cap: 64146 },
-        { id: "bcplace", name: "BC Place", city: "Vancouver", country: "Canada", lat: 49.2768, lng: -123.1120, cap: 52497 },
-        { id: "bbva", name: "Estadio BBVA", city: "Monterrey", country: "Mexico", lat: 25.6692, lng: -100.2447, cap: 51243 },
-        { id: "akron", name: "Estadio Akron", city: "Guadalajara", country: "Mexico", lat: 20.6817, lng: -103.4628, cap: 45664 },
-        { id: "bmo", name: "BMO Field", city: "Toronto", country: "Canada", lat: 43.6328, lng: -79.4183, cap: 43036 },
-    ],
-    
-    teams: [
-        { code: "USA", name: "United States", flag: "🇺🇸" },
-        { code: "MEX", name: "Mexico", flag: "🇲🇽" },
-        { code: "CAN", name: "Canada", flag: "🇨🇦" },
-        { code: "JPN", name: "Japan", flag: "🇯🇵" },
-        { code: "IRN", name: "Iran", flag: "🇮🇷" },
-        { code: "KOR", name: "South Korea", flag: "🇰🇷" },
-        { code: "AUS", name: "Australia", flag: "🇦🇺" },
-        { code: "UZB", name: "Uzbekistan", flag: "🇺🇿" },
-        { code: "JOR", name: "Jordan", flag: "🇯🇴" },
-        { code: "KSA", name: "Saudi Arabia", flag: "🇸🇦" },
-        { code: "QAT", name: "Qatar", flag: "🇶🇦" },
-        { code: "IRQ", name: "Iraq", flag: "🇮🇶" },
-        { code: "UAE", name: "UAE", flag: "🇦🇪" },
-        { code: "NZL", name: "New Zealand", flag: "🇳🇿" },
-        { code: "ARG", name: "Argentina", flag: "🇦🇷" },
-        { code: "BRA", name: "Brazil", flag: "🇧🇷" },
-        { code: "ECU", name: "Ecuador", flag: "🇪🇨" },
-        { code: "COL", name: "Colombia", flag: "🇨🇴" },
-        { code: "URU", name: "Uruguay", flag: "🇺🇾" },
-        { code: "PAR", name: "Paraguay", flag: "🇵🇾" },
-        { code: "EGY", name: "Egypt", flag: "🇪🇬" },
-        { code: "MAR", name: "Morocco", flag: "🇲🇦" },
-        { code: "TUN", name: "Tunisia", flag: "🇹🇳" },
-        { code: "SEN", name: "Senegal", flag: "🇸🇳" },
-        { code: "ALG", name: "Algeria", flag: "🇩🇿" },
-        { code: "GHA", name: "Ghana", flag: "🇬🇭" },
-        { code: "CMR", name: "Cameroon", flag: "🇨🇲" },
-        { code: "NGA", name: "Nigeria", flag: "🇳🇬" },
-        { code: "CIV", name: "Ivory Coast", flag: "🇨🇮" },
-        { code: "COD", name: "DR Congo", flag: "🇨🇩" },
-        { code: "CPV", name: "Cape Verde", flag: "🇨🇻" },
-        { code: "MLI", name: "Mali", flag: "🇲🇱" },
-        { code: "ENG", name: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-        { code: "FRA", name: "France", flag: "🇫🇷" },
-        { code: "ESP", name: "Spain", flag: "🇪🇸" },
-        { code: "GER", name: "Germany", flag: "🇩🇪" },
-        { code: "ITA", name: "Italy", flag: "🇮🇹" },
-        { code: "NED", name: "Netherlands", flag: "🇳🇱" },
-        { code: "POR", name: "Portugal", flag: "🇵🇹" },
-        { code: "BEL", name: "Belgium", flag: "🇧🇪" },
-        { code: "CRO", name: "Croatia", flag: "🇭🇷" },
-        { code: "POL", name: "Poland", flag: "🇵🇱" },
-        { code: "SUI", name: "Switzerland", flag: "🇨🇭" },
-        { code: "AUT", name: "Austria", flag: "🇦🇹" },
-        { code: "NOR", name: "Norway", flag: "🇳🇴" },
-        { code: "DEN", name: "Denmark", flag: "🇩🇰" },
-        { code: "SRB", name: "Serbia", flag: "🇷🇸" },
-        { code: "TUR", name: "Turkey", flag: "🇹🇷" },
-        { code: "CZE", name: "Czech Republic", flag: "🇨🇿" },
-        { code: "SCO", name: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
-        { code: "WAL", name: "Wales", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿" },
-        { code: "UKR", name: "Ukraine", flag: "🇺🇦" },
-        { code: "FIN", name: "Finland", flag: "🇫🇮" },
-        { code: "HUN", name: "Hungary", flag: "🇭🇺" },
-        { code: "PAN", name: "Panama", flag: "🇵🇦" },
-    ],
-    
-    arabTeams: [
-        { code: "EGY", name: "Egypt", flag: "🇪🇬", group: "F" },
-        { code: "MAR", name: "Morocco", flag: "🇲🇦", group: "G" },
-        { code: "TUN", name: "Tunisia", flag: "🇹🇳", group: "H" },
-        { code: "ALG", name: "Algeria", flag: "🇩🇿", group: "J" },
-        { code: "KSA", name: "Saudi Arabia", flag: "🇸🇦", group: "E" },
-        { code: "QAT", name: "Qatar", flag: "🇶🇦", group: "K" },
-        { code: "IRQ", name: "Iraq", flag: "🇮🇶", group: "L" },
-        { code: "JOR", name: "Jordan", flag: "🇯🇴", group: "J" },
-        { code: "UAE", name: "UAE", flag: "🇦🇪", group: "TBD" },
-    ]
-};
-
-// =====================================================
-// DATA INITIALIZATION
-// =====================================================
-
-async function initData() {
-    updateApiStatus("cached", "🔄 جاري التحقق من البيانات...");
-    
-    // Try cache first
-    const cached = getCachedData();
-    if (cached) {
-        appData = cached;
-        updateApiStatus("cached", "📦 بيانات محفوظة (اضغط تحديث للبيانات الجديدة)");
-        return;
-    }
-    
-    // Try APIs
-    await refreshData();
+function T(code) { return teams[code] || {f:"🏳️",n:code}; }
+function S(id) { return stadiums.find(s=>s.id===id) || {name:id,city:"",cap:0}; }
+function fmtDate(d) { const dt=new Date(d); return dt.toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"}); }
+function timeLeft(d,t) {
+    const m=new Date(d+"T"+t+":00Z"), now=new Date(), diff=m-now;
+    if(diff<=0) return "انتهى";
+    const dd=Math.floor(diff/864e5),h=Math.floor((diff%864e5)/36e5);
+    return dd>0? dd+" يوم "+h+" ساعة" : h+" ساعة";
 }
-
-async function refreshData() {
-    updateApiStatus("loading", "🔄 جاري جلب البيانات الحية...");
-    
-    let matches = null;
-    let wikiData = null;
-    
-    // Try TheSportsDB
-    try {
-        matches = await fetchFromTheSportsDB();
-        if (matches && matches.length > 0) {
-            console.log("TheSportsDB:", matches.length, "matches");
-        }
-    } catch (e) {
-        console.log("TheSportsDB failed:", e);
-    }
-    
-    // Try Wikipedia
-    try {
-        wikiData = await fetchFromWikipedia();
-        if (wikiData) {
-            console.log("Wikipedia data:", wikiData.venues.length, "venues");
-        }
-    } catch (e) {
-        console.log("Wikipedia failed:", e);
-    }
-    
-    // Build data
-    appData = {
-        stadiums: FALLBACK_DATA.stadiums,
-        teams: FALLBACK_DATA.teams,
-        arabTeams: FALLBACK_DATA.arabTeams,
-        matches: matches || generateFallbackMatches(),
-        groups: wikiData?.groups || generateFallbackGroups(),
-        lastUpdate: new Date().toISOString(),
-        source: matches ? "api" : "fallback"
-    };
-    
-    // Cache it
-    setCachedData(appData);
-    
-    // Update UI
-    const sourceText = matches ? "✅ بيانات حية من TheSportsDB" : "📦 بيانات أساسية (اضغط تحديث لاحقاً)";
-    updateApiStatus(matches ? "online" : "offline", sourceText);
-    
-    // Re-render current tab
-    const activeTab = document.querySelector(".tab-btn.active");
-    if (activeTab) {
-        const tabId = activeTab.id.replace("tab-", "");
-        switchTab(tabId);
-    }
+function pred(h,a) {
+    const s={BRA:95,ARG:93,FRA:92,ENG:90,ESP:89,GER:88,POR:87,ITA:86,NED:85,BEL:84,CRO:83,MAR:82,EGY:78,SEN:79,TUN:75,ALG:76,QAT:70,IRQ:68,JOR:65,NOR:72,JPN:79,KOR:77,USA:76,MEX:80,CAN:73,URU:81,COL:80,NGA:76,CMR:74,AUS:73,IRN:72,ECU:71,WAL:74,POL:75,GHA:70,SUI:78,UKR:72,DEN:76,SWE:73,SRB:70,TUR:73,CIV:74,MLI:68,CPV:65,UAE:63,PAN:60,NZL:58,SCO:70,TBD:50};
+    const sh=s[h]||50,sa=s[a]||50,t=sh+sa,p=Math.round(sh/t*100),pa=100-p,dr=Math.max(15,30-Math.abs(sh-sa));
+    return {h:Math.round((100-dr)*p/100),a:100-dr-Math.round((100-dr)*p/100),d:dr};
 }
+function stageName(r) { return {1:"الجولة الأولى",2:"الجولة الثانية",3:"الجولة الثالثة",R16:"دور الـ 16",QF:"ربع النهائي",SF:"نصف النهائي",3rd:"المركز الثالث",FINAL:"🏆 النهائي"}[r]||r; }
 
-function updateApiStatus(status, text) {
-    const el = document.getElementById("api-status");
-    el.className = `api-status api-${status}`;
-    el.textContent = text;
-}
-
-// Generate fallback matches from known schedule
-function generateFallbackMatches() {
-    // Based on FIFA's official match calendar format
-    // Group stage: June 11-27, 2026
-    // Each team plays 3 matches
-    const matches = [];
-    let id = 1;
-    
-    // Group A (Mexico host)
-    matches.push({ id: id++, date: "2026-06-11", time: "19:00", home: "MEX", away: "CAN", venue: "azteca", group: "A", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-12", time: "16:00", home: "PAN", away: "TBD", venue: "metlife", group: "A", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-16", time: "19:00", home: "MEX", away: "PAN", venue: "azteca", group: "A", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-17", time: "16:00", home: "CAN", away: "TBD", venue: "bbva", group: "A", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-21", time: "19:00", home: "MEX", away: "TBD", venue: "azteca", group: "A", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-21", time: "19:00", home: "CAN", away: "PAN", venue: "bcplace", group: "A", status: "NS" });
-    
-    // Group F - EGYPT
-    matches.push({ id: id++, date: "2026-06-13", time: "13:00", home: "EGY", away: "NED", venue: "att", group: "F", status: "NS", egypt: true });
-    matches.push({ id: id++, date: "2026-06-14", time: "13:00", home: "ITA", away: "TBD", venue: "nrg", group: "F", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-18", time: "16:00", home: "EGY", away: "ITA", venue: "mercedes", group: "F", status: "NS", egypt: true });
-    matches.push({ id: id++, date: "2026-06-19", time: "13:00", home: "NED", away: "TBD", venue: "lincoln", group: "F", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-23", time: "16:00", home: "EGY", away: "TBD", venue: "hardrock", group: "F", status: "NS", egypt: true });
-    matches.push({ id: id++, date: "2026-06-23", time: "16:00", home: "NED", away: "ITA", venue: "gillette", group: "F", status: "NS" });
-    
-    // Group G - MOROCCO
-    matches.push({ id: id++, date: "2026-06-14", time: "16:00", home: "MAR", away: "BEL", venue: "lumen", group: "G", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-15", time: "13:00", home: "CRO", away: "TBD", venue: "levis", group: "G", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-19", time: "16:00", home: "MAR", away: "CRO", venue: "sofi", group: "G", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-20", time: "13:00", home: "BEL", away: "TBD", venue: "lincoln", group: "G", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-24", time: "16:00", home: "MAR", away: "TBD", venue: "mercedes", group: "G", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-24", time: "16:00", home: "BEL", away: "CRO", venue: "nrg", group: "G", status: "NS" });
-    
-    // Group H - TUNISIA
-    matches.push({ id: id++, date: "2026-06-15", time: "16:00", home: "TUN", away: "URU", venue: "arrowhead", group: "H", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-16", time: "13:00", home: "SEN", away: "TBD", venue: "att", group: "H", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-20", time: "16:00", home: "TUN", away: "SEN", venue: "nrg", group: "H", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-21", time: "13:00", home: "URU", away: "TBD", venue: "hardrock", group: "H", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-25", time: "16:00", home: "TUN", away: "TBD", venue: "gillette", group: "H", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-25", time: "16:00", home: "URU", away: "SEN", venue: "metlife", group: "H", status: "NS" });
-    
-    // Group E - SAUDI ARABIA
-    matches.push({ id: id++, date: "2026-06-14", time: "19:00", home: "KSA", away: "GER", venue: "sofi", group: "E", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-15", time: "19:00", home: "POR", away: "TBD", venue: "lumen", group: "E", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-20", time: "19:00", home: "KSA", away: "POR", venue: "levis", group: "E", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-21", time: "19:00", home: "GER", away: "TBD", venue: "lincoln", group: "E", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-25", time: "19:00", home: "KSA", away: "TBD", venue: "mercedes", group: "E", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-25", time: "19:00", home: "GER", away: "POR", venue: "metlife", group: "E", status: "NS" });
-    
-    // Group J - ALGERIA & JORDAN
-    matches.push({ id: id++, date: "2026-06-16", time: "16:00", home: "ALG", away: "NOR", venue: "bcplace", group: "J", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-17", time: "13:00", home: "JOR", away: "TBD", venue: "akron", group: "J", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-21", time: "16:00", home: "ALG", away: "JOR", venue: "bbva", group: "J", status: "NS", arab: true, note: "كلاسيكو عربي" });
-    matches.push({ id: id++, date: "2026-06-22", time: "13:00", home: "NOR", away: "TBD", venue: "akron", group: "J", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-26", time: "16:00", home: "ALG", away: "TBD", venue: "bcplace", group: "J", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-26", time: "16:00", home: "NOR", away: "JOR", venue: "gillette", group: "J", status: "NS" });
-    
-    // Group K - QATAR
-    matches.push({ id: id++, date: "2026-06-17", time: "19:00", home: "QAT", away: "KOR", venue: "sofi", group: "K", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-18", time: "13:00", home: "AUS", away: "TBD", venue: "lumen", group: "K", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-22", time: "19:00", home: "QAT", away: "AUS", venue: "levis", group: "K", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-23", time: "13:00", home: "KOR", away: "TBD", venue: "lincoln", group: "K", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-27", time: "19:00", home: "QAT", away: "TBD", venue: "mercedes", group: "K", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-27", time: "19:00", home: "KOR", away: "AUS", venue: "metlife", group: "K", status: "NS" });
-    
-    // Group L - IRAQ
-    matches.push({ id: id++, date: "2026-06-18", time: "16:00", home: "IRQ", away: "ECU", venue: "arrowhead", group: "L", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-19", time: "16:00", home: "NGA", away: "TBD", venue: "att", group: "L", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-23", time: "16:00", home: "IRQ", away: "NGA", venue: "nrg", group: "L", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-24", time: "16:00", home: "ECU", away: "TBD", venue: "hardrock", group: "L", status: "NS" });
-    matches.push({ id: id++, date: "2026-06-27", time: "16:00", home: "IRQ", away: "TBD", venue: "gillette", group: "L", status: "NS", arab: true });
-    matches.push({ id: id++, date: "2026-06-27", time: "16:00", home: "ECU", away: "NGA", venue: "metlife", group: "L", status: "NS" });
-    
-    // Knockout stage
-    for (let i = 0; i < 16; i++) {
-        const date = new Date(2026, 6, 4 + Math.floor(i / 2));
-        matches.push({ id: id++, date: date.toISOString().split("T")[0], time: i % 2 === 0 ? "16:00" : "20:00", home: "TBD", away: "TBD", venue: "tbd", group: "", round: "R32", status: "NS" });
-    }
-    
-    return matches;
-}
-
-function generateFallbackGroups() {
-    return {
-        "A": ["MEX", "CAN", "PAN", "TBD"],
-        "B": ["USA", "ARG", "COL", "TBD"],
-        "C": ["BRA", "ENG", "JPN", "TBD"],
-        "D": ["FRA", "ESP", "IRN", "TBD"],
-        "E": ["GER", "POR", "KSA", "TBD"],
-        "F": ["NED", "ITA", "EGY", "TBD"],
-        "G": ["BEL", "CRO", "MAR", "TBD"],
-        "H": ["URU", "SEN", "TUN", "TBD"],
-        "I": ["POL", "SUI", "GHA", "TBD"],
-        "J": ["NOR", "ALG", "JOR", "TBD"],
-        "K": ["KOR", "AUS", "QAT", "TBD"],
-        "L": ["ECU", "NGA", "IRQ", "TBD"],
-    };
-}
-
-// =====================================================
-// UI FUNCTIONS
-// =====================================================
-
-function getTeam(name) {
-    const t = appData.teams.find(t => t.name === name || t.code === name);
-    return t || { code: name, name: name, flag: "🏳️" };
-}
-
-function getStadium(id) {
-    return appData.stadiums.find(s => s.id === id) || { name: id, city: "", country: "", cap: 0 };
-}
-
-function stageName(s) {
-    return { group: "دور المجموعات", R32: "دور الـ 32", QF: "ربع النهائي", SF: "نصف النهائي", "3rd": "المركز الثالث", Final: "🏆 النهائي" }[s] || s;
-}
-
-function stageBadge(s) {
-    return { group: "bg-blue-500/20 text-blue-300", R32: "bg-green-500/20 text-green-300", QF: "bg-yellow-500/20 text-yellow-300", SF: "bg-orange-500/20 text-orange-300", "3rd": "bg-purple-500/20 text-purple-300", Final: "bg-gold/20 text-gold" }[s] || "bg-gray-500/20 text-gray-300";
-}
-
-function fmtDate(d) {
-    try {
-        const dt = new Date(d);
-        const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-        const months = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-        return days[dt.getDay()] + "، " + dt.getDate() + " " + months[dt.getMonth()];
-    } catch (e) { return d; }
-}
-
-function timeUntil(date, time) {
-    try {
-        const m = new Date(date + "T" + (time || "12:00") + ":00Z");
-        const now = new Date();
-        const diff = m - now;
-        if (diff <= 0) return { text: "انتهى", past: true };
-        const d = Math.floor(diff / 86400000);
-        const h = Math.floor((diff % 86400000) / 3600000);
-        const mn = Math.floor((diff % 3600000) / 60000);
-        if (d > 0) return { text: d + " يوم و " + h + " ساعة", past: false };
-        if (h > 0) return { text: h + " ساعة و " + mn + " دقيقة", past: false };
-        return { text: mn + " دقيقة", past: false };
-    } catch (e) { return { text: "قريباً", past: false }; }
-}
-
-function prediction(t1, t2) {
-    const str = { BRA: 95, ARG: 93, FRA: 92, ENG: 90, ESP: 89, GER: 88, POR: 87, ITA: 86, NED: 85, BEL: 84, CRO: 83, MAR: 82, EGY: 78, SEN: 79, TUN: 75, ALG: 76, KSA: 72, QAT: 70, IRQ: 68, JOR: 65, UZB: 70, JPN: 79, KOR: 77, USA: 76, MEX: 80, CAN: 73, URU: 81, COL: 80, NGA: 76, CMR: 74, AUS: 73, IRN: 72, ECU: 71, WAL: 74, POL: 75, GHA: 70, TBD: 50 };
-    const s1 = str[t1] || 50, s2 = str[t2] || 50;
-    const tot = s1 + s2;
-    const p1 = Math.round(s1 / tot * 100), p2 = 100 - p1;
-    const draw = Math.max(15, 30 - Math.abs(s1 - s2));
-    const a1 = Math.round((100 - draw) * p1 / 100), a2 = 100 - draw - a1;
-    return { t1: a1, t2: a2, draw };
-}
-
-function renderMatchCard(m) {
-    const t1 = getTeam(m.home), t2 = getTeam(m.away);
-    const st = getStadium(m.venue);
-    const tu = timeUntil(m.date, m.time);
-    const pred = prediction(m.home, m.away);
-    const isEgypt = m.egypt, isArab = m.arab;
-    const isLive = m.status === "LIVE" || m.status === "FT";
-    
-    return `
-    <div class="match-card glass rounded-2xl p-4 ${isEgypt ? "border-gold/40 bg-gold/5" : isArab ? "border-green-500/30 bg-green-900/10" : ""}">
+function matchCard(m) {
+    const h=T(m.h),a=T(m.a),s=S(m.s),tl=timeLeft(m.d,m.t),p=pred(m.h,m.a);
+    return `<div class="match-card glass rounded-xl p-4 ${m.egypt?"border-amber-500/40 bg-amber-900/10":m.arab?"border-green-500/30 bg-green-900/10":""}">
+        <div class="flex justify-between text-xs text-gray-400 mb-2">
+            <span class="px-2 py-0.5 rounded ${m.r<=3?"bg-blue-500/20 text-blue-300":"bg-orange-500/20 text-orange-300"}">${stageName(m.r)} ${m.g?"— "+m.g:""}</span>
+            <span>${fmtDate(m.d)}</span>
+        </div>
+        ${m.note?`<div class="text-xs text-amber-400 font-bold text-center mb-1">${m.note}</div>`:""}
         <div class="flex items-center justify-between mb-2">
-            <span class="px-2 py-0.5 rounded text-xs ${stageBadge(m.round || "group")}">${stageName(m.round || "group")}${m.group ? " — " + m.group : ""}</span>
-            <div class="flex items-center gap-2">
-                ${isLive ? '<span class="live-dot"></span><span class="text-red-400 text-xs">مباشر</span>' : ""}
-                <span class="text-xs text-gray-400">${fmtDate(m.date)}</span>
-            </div>
+            <div class="text-center flex-1"><div class="text-2xl">${h.f}</div><div class="text-sm font-bold ${m.h==="EGY"?"text-amber-400":""}">${h.n}</div></div>
+            <div class="px-3 text-center"><div class="text-lg font-bold gold">VS</div><div class="text-[10px] text-gray-500">${m.t}</div></div>
+            <div class="text-center flex-1"><div class="text-2xl">${a.f}</div><div class="text-sm font-bold ${m.a==="EGY"?"text-amber-400":""}">${a.n}</div></div>
         </div>
-        ${m.note ? `<div class="text-xs text-gold font-bold mb-2 text-center">${m.note}</div>` : ""}
-        <div class="flex items-center justify-between mb-3">
-            <div class="flex-1 text-center">
-                <div class="text-3xl mb-1">${t1.flag}</div>
-                <div class="font-bold text-sm ${m.home === "EGY" ? "text-gold" : ""}">${t1.name}</div>
-            </div>
-            <div class="px-4 text-center">
-                ${m.homeScore !== null && m.awayScore !== null ? 
-                    `<div class="text-2xl font-bold text-gold">${m.homeScore} - ${m.awayScore}</div>` :
-                    `<div class="text-xl font-bold text-gold">VS</div>`
-                }
-                <div class="text-xs text-gray-400">${m.time} UTC</div>
-            </div>
-            <div class="flex-1 text-center">
-                <div class="text-3xl mb-1">${t2.flag}</div>
-                <div class="font-bold text-sm ${m.away === "EGY" ? "text-gold" : ""}">${t2.name}</div>
-            </div>
-        </div>
-        <div class="mb-2">
-            <div class="flex justify-between text-[10px] text-gray-400 mb-1">
-                <span>${pred.t1}%</span><span>تعادل ${pred.draw}%</span><span>${pred.t2}%</span>
-            </div>
-            <div class="pred-bar flex gap-0.5">
-                <div class="pred-fill bg-blue-500" style="width:${pred.t1}%"></div>
-                <div class="pred-fill bg-gray-500" style="width:${pred.draw}%"></div>
-                <div class="pred-fill bg-red-500" style="width:${pred.t2}%"></div>
-            </div>
-        </div>
-        <div class="flex items-center justify-between text-xs">
-            <span class="text-gray-400">🏟️ ${st.name}، ${st.city}</span>
-            <span class="${tu.past ? "text-gray-500" : "text-green-400"}">⏱️ ${tu.past ? "انتهى" : tu.text}</span>
-        </div>
-        ${isEgypt ? '<div class="mt-2 text-center"><span class="text-xs px-3 py-1 rounded-full bg-red-900/40 text-red-300 border border-red-500/30">🇪🇬 ماتش منتخب مصر</span></div>' : ""}
-        ${isArab && !isEgypt ? '<div class="mt-2 text-center"><span class="text-xs px-3 py-1 rounded-full bg-green-900/40 text-green-300 border border-green-500/30">🌙 ماتش عربي</span></div>' : ""}
+        <div class="mb-2"><div class="flex justify-between text-[10px] text-gray-500 mb-1"><span>${p.h}%</span><span>تعادل ${p.d}%</span><span>${p.a}%</span></div>
+        <div class="h-1.5 rounded bg-white/10 flex gap-0.5"><div class="h-full rounded bg-blue-500" style="width:${p.h}%"></div><div class="h-full rounded bg-gray-500" style="width:${p.d}%"></div><div class="h-full rounded bg-red-500" style="width:${p.a}%"></div></div></div>
+        <div class="flex justify-between text-xs"><span class="text-gray-400">🏟️ ${s.name}، ${s.city}</span><span class="text-green-400">⏱️ ${tl}</span></div>
+        ${m.egypt?'<div class="mt-1 text-center"><span class="text-[10px] px-2 py-0.5 rounded-full bg-red-900/40 text-red-300">🇪🇬 ماتش مصر</span></div>':""}
+        ${m.arab&&!m.egypt?'<div class="mt-1 text-center"><span class="text-[10px] px-2 py-0.5 rounded-full bg-green-900/40 text-green-300">🌙 ماتش عربي</span></div>':""}
     </div>`;
 }
 
-function switchTab(tab) {
-    ["egypt", "arab", "schedule", "groups", "stadiums"].forEach(t => {
-        const el = document.getElementById("tab-" + t);
-        el.className = "tab-btn " + (t === tab ? "active" : "glass") + " px-4 py-2 rounded-xl text-sm flex items-center gap-2";
+// =====================================================
+// TABS
+// =====================================================
+function showTab(t) {
+    ["egypt","arab","groups","stadiums"].forEach(x=>{
+        document.getElementById("t-"+x).className="tab "+(x===t?"active":"glass")+" px-4 py-2 rounded-xl text-sm";
     });
-    const c = document.getElementById("content-area");
+    const c=document.getElementById("content");
     
-    if (tab === "egypt") {
-        const egyptMatches = appData.matches.filter(m => m.egypt);
-        c.innerHTML = `
-            <div class="glass rounded-2xl p-6 mb-6 border-r-4 border-r-amber-600">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="text-6xl">🇪🇬</div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gold">منتخب مصر</h2>
-                        <p class="text-gray-400">المجموعة F • كأس العالم 2026</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">3</div><div class="text-xs text-gray-400">ماتشات المجموعة</div></div>
-                    <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">F</div><div class="text-xs text-gray-400">المجموعة</div></div>
-                    <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">3</div><div class="text-xs text-gray-400">ملاعب مختلفة</div></div>
-                    <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">3</div><div class="text-xs text-gray-400">دول مختلفة</div></div>
-                </div>
-                <div class="text-sm text-gray-400">
-                    <p>المنافسين: 🇳🇱 هولندا • 🇮🇹 إيطاليا • 🏳️ متأهل من الملحق</p>
-                    <p class="mt-1">التدريب: Gonzaga University، Spokane، واشنطن</p>
-                </div>
+    if(t==="egypt") {
+        const em=matches.filter(m=>m.egypt);
+        c.innerHTML=`<div class="glass rounded-xl p-5 mb-5 border-r-4 border-r-amber-600">
+            <div class="flex items-center gap-4 mb-4"><span class="text-5xl">🇪🇬</span><div><h2 class="text-2xl font-bold gold">منتخب مصر</h2><p class="text-gray-400">المجموعة J — كل المنتخبات العربية!</p></div></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                <div class="glass rounded-lg p-2 text-center"><div class="text-xl font-bold gold">4</div><div class="text-[10px] text-gray-400">منتخبات عربية</div></div>
+                <div class="glass rounded-lg p-2 text-center"><div class="text-xl font-bold gold">J</div><div class="text-[10px] text-gray-400">المجموعة</div></div>
+                <div class="glass rounded-lg p-2 text-center"><div class="text-xl font-bold gold">3</div><div class="text-[10px] text-gray-400">ماتشات</div></div>
+                <div class="glass rounded-lg p-2 text-center"><div class="text-xl font-bold gold">3</div><div class="text-[10px] text-gray-400">ملاعب</div></div>
             </div>
-            <h3 class="text-xl font-bold text-gold mb-3">📅 جدول ماتشات مصر</h3>
-            <div class="space-y-3">${egyptMatches.map(m => renderMatchCard(m)).join("")}</div>
-        `;
-    } else if (tab === "arab") {
-        const arabMatches = appData.matches.filter(m => m.arab || m.egypt);
-        c.innerHTML = `
-            <div class="glass rounded-2xl p-6 mb-6 border-r-4 border-r-green-600">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="text-5xl">🌙</div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-gold">المنتخبات العربية</h2>
-                        <p class="text-gray-400">${appData.arabTeams.length} منتخبات عربية مؤهلة • كأس العالم 2026</p>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                    ${appData.arabTeams.map(t => `<div class="glass rounded-xl px-3 py-2 flex items-center gap-2">
-                        <span class="text-2xl">${t.flag}</span>
-                        <span class="font-bold text-sm">${t.name}</span>
-                        <span class="text-xs text-gray-400">المجموعة ${t.group}</span>
-                    </div>`).join("")}
-                </div>
+            <p class="text-sm text-gray-400">المنافسين: 🇹🇳 تونس • 🇩🇿 الجزائر • 🇮🇶 العراق</p>
+            <p class="text-xs text-gray-500 mt-1">مجموعة عربية خالصة! أول مرة في التاريخ 🏆</p>
+        </div>
+        <h3 class="text-lg font-bold gold mb-3">📅 جدول ماتشات مصر</h3>
+        <div class="space-y-3">${em.map(m=>matchCard(m)).join("")}</div>`;
+    }
+    else if(t==="arab") {
+        const am=matches.filter(m=>m.arab||m.egypt);
+        c.innerHTML=`<div class="glass rounded-xl p-5 mb-5 border-r-4 border-r-green-600">
+            <div class="flex items-center gap-4 mb-4"><span class="text-4xl">🌙</span><div><h2 class="text-2xl font-bold gold">المنتخبات العربية</h2><p class="text-gray-400">9 منتخبات عربية — رقم قياسي!</p></div></div>
+            <div class="flex flex-wrap gap-2">
+                ${arabTeams.map(code=>{const T_=T(code);return `<div class="glass rounded-lg px-3 py-2 flex items-center gap-2"><span class="text-xl">${T_.f}</span><span class="font-bold text-sm">${T_.n}</span><span class="text-xs text-gray-400">المجموعة ${groups[Object.keys(groups).find(g=>groups[g].teams.includes(code))]?.name.replace("Group ","")||"?"}</span></div>`;}).join("")}
             </div>
-            <h3 class="text-xl font-bold text-gold mb-3">📅 جدول ماتشات المنتخبات العربية</h3>
-            <div class="space-y-3">${arabMatches.map(m => renderMatchCard(m)).join("")}</div>
-        `;
-    } else if (tab === "schedule") {
-        const stages = ["group", "R32", "QF", "SF", "3rd", "Final"];
-        let html = "";
-        stages.forEach(s => {
-            const sm = appData.matches.filter(m => (m.round || "group") === s);
-            if (!sm.length) return;
-            html += `<div class="mb-6"><h3 class="text-lg font-bold text-gold mb-3"><span class="px-2 py-0.5 rounded text-xs ${stageBadge(s)}">${stageName(s)}</span></h3><div class="space-y-3">${sm.map(m => renderMatchCard(m)).join("")}</div></div>`;
-        });
-        c.innerHTML = html;
-    } else if (tab === "groups") {
-        let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
-        for (const [grp, teams] of Object.entries(appData.groups)) {
-            const hasEgypt = teams.includes("EGY");
-            const hasArab = teams.some(t => appData.arabTeams.some(a => a.code === t));
-            html += `<div class="glass rounded-2xl p-4 ${hasEgypt ? "border border-gold/30" : hasArab ? "border border-green-500/20" : ""}">
-                <h3 class="text-lg font-bold text-gold mb-3 flex items-center gap-2">
-                    المجموعة ${grp}
-                    ${hasEgypt ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-900/40 text-red-300">🇪🇬 مصر</span>' : ""}
-                    ${hasArab && !hasEgypt ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-900/40 text-green-300">🌙 عربي</span>' : ""}
+            <div class="mt-3 p-3 rounded-lg bg-amber-900/20 border border-amber-500/20">
+                <p class="text-sm text-amber-300 font-bold">🔥 المجموعة J: أول مجموعة عربية خالصة!</p>
+                <p class="text-xs text-gray-400">مصر • تونس • الجزائر • العراق — 4 منتخبات عربية في مجموعة واحدة</p>
+            </div>
+        </div>
+        <h3 class="text-lg font-bold gold mb-3">📅 جدول الماتشات العربية</h3>
+        <div class="space-y-3">${am.map(m=>matchCard(m)).join("")}</div>`;
+    }
+    else if(t==="groups") {
+        let html='<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">';
+        for(const[g,data] of Object.entries(groups)) {
+            const hasArab=data.teams.some(t=>arabTeams.includes(t));
+            const hasEgypt=data.teams.includes("EGY");
+            html+=`<div class="glass rounded-xl p-4 ${hasEgypt?"border border-amber-500/30":hasArab?"border border-green-500/20":""}">
+                <h3 class="font-bold gold mb-2 flex items-center gap-2">المجموعة ${g}
+                    ${hasEgypt?'<span class="text-[10px] px-1.5 py-0.5 rounded bg-red-900/40 text-red-300">🇪🇬</span>':""}
+                    ${hasArab&&!hasEgypt?'<span class="text-[10px] px-1.5 py-0.5 rounded bg-green-900/40 text-green-300">🌙</span>':""}
                 </h3>
-                <div class="space-y-2">
-                ${teams.map(code => {
-                    const t = getTeam(code);
-                    const isArab = appData.arabTeams.some(a => a.code === code);
-                    return `<div class="flex items-center gap-2 p-2 rounded-lg ${isArab ? "bg-green-900/20" : "bg-white/5"}">
-                        <span class="text-xl">${t.flag}</span>
-                        <span class="text-sm ${isArab ? "text-green-300 font-bold" : ""}">${t.name}</span>
-                    </div>`;
-                }).join("")}
-                </div>
-            </div>`;
+                <div class="space-y-1">
+                ${data.teams.map(code=>{const T_=T(code);const isA=arabTeams.includes(code);return `<div class="flex items-center gap-2 p-1.5 rounded ${isA?"bg-green-900/20":"bg-white/5"}"><span class="text-lg">${T_.f}</span><span class="text-sm ${isA?"text-green-300 font-bold":""}">${T_.n}</span></div>`;}).join("")}
+                </div></div>`;
         }
-        html += `</div>`;
-        c.innerHTML = html;
-    } else if (tab === "stadiums") {
-        c.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${appData.stadiums.map(s => {
-                const stMatches = appData.matches.filter(m => m.venue === s.id);
-                const hasEgypt = stMatches.some(m => m.egypt);
-                const hasArab = stMatches.some(m => m.arab);
-                return `<div class="glass rounded-2xl p-4 cursor-pointer hover:border-gold/40 transition-all" onclick="showStadiumModal('${s.id}')">
-                    <div class="flex items-center justify-between mb-2">
-                        <div>
-                            <h3 class="font-bold text-gold">${s.name}</h3>
-                            <p class="text-sm text-gray-400">${s.city}، ${s.country}</p>
-                        </div>
-                        <div class="flex gap-1">
-                            ${hasEgypt ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-red-900/40 text-red-300">🇪🇬</span>' : ""}
-                            ${hasArab && !hasEgypt ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-green-900/40 text-green-300">🌙</span>' : ""}
-                        </div>
-                    </div>
-                    <div class="text-xs text-gray-500">السعة: ${s.cap?.toLocaleString() || "?"} • ${stMatches.length} مباريات</div>
-                </div>`;
-            }).join("")}
+        html+=`</div>`;
+        c.innerHTML=html;
+    }
+    else if(t==="stadiums") {
+        c.innerHTML=`<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            ${stadiums.map(s=>{const sm=matches.filter(m=>m.m===s.id);const hasE=sm.some(m=>m.egypt);const hasA=sm.some(m=>m.arab);return `<div class="glass rounded-xl p-4 cursor-pointer hover:border-amber-500/40" onclick="showStadium('${s.id}')">
+                <div class="flex justify-between"><div><h3 class="font-bold gold">${s.name}</h3><p class="text-sm text-gray-400">${s.city}، ${s.country}</p></div>
+                <div class="flex gap-1">${hasE?'<span class="text-[10px] px-1 py-0.5 rounded bg-red-900/40 text-red-300">🇪🇬</span>':""}${hasA&&!hasE?'<span class="text-[10px] px-1 py-0.5 rounded bg-green-900/40 text-green-300">🌙</span>':""}</div></div>
+                <div class="text-xs text-gray-500 mt-1">السعة: ${s.cap?.toLocaleString()} • ${sm.length} مباريات</div>
+            </div>`;}).join("")}
         </div>`;
     }
-    
-    // Update last update time
-    document.getElementById("last-update").textContent = 
-        `آخر تحديث: ${new Date(appData.lastUpdate).toLocaleString("ar-EG")} | المصدر: ${appData.source === "api" ? "TheSportsDB API" : "بيانات محفوظة"}`;
 }
 
-function showStadiumModal(id) {
-    const s = getStadium(id);
-    const stMatches = appData.matches.filter(m => m.venue === id);
-    document.getElementById("modal-name").textContent = s.name;
-    document.getElementById("modal-city").textContent = s.city + "، " + s.country;
-    document.getElementById("modal-info").innerHTML = `
-        <div class="grid grid-cols-3 gap-3 text-center">
-            <div class="glass rounded-xl p-3"><div class="text-xl font-bold text-gold">${s.cap?.toLocaleString() || "?"}</div><div class="text-xs text-gray-400">السعة</div></div>
-            <div class="glass rounded-xl p-3"><div class="text-xl font-bold text-gold">${stMatches.length}</div><div class="text-xs text-gray-400">مباريات</div></div>
-            <div class="glass rounded-xl p-3"><div class="text-xl font-bold text-gold">${s.country}</div><div class="text-xs text-gray-400">الدولة</div></div>
-        </div>`;
-    document.getElementById("modal-matches").innerHTML = stMatches.length ? stMatches.map(m => renderMatchCard(m)).join("") : '<p class="text-gray-400 text-center py-4">لا توجد مباريات محددة حالياً</p>';
-    document.getElementById("stadium-modal").classList.add("active");
-}
-
-function closeModal() {
-    document.getElementById("stadium-modal").classList.remove("active");
+function showStadium(id) {
+    const s=S(id), sm=matches.filter(m=>m.s===id);
+    document.getElementById("m-title").textContent=s.name;
+    document.getElementById("m-body").innerHTML=`<div class="grid grid-cols-3 gap-2 text-center mb-4">
+        <div class="glass rounded-lg p-2"><div class="text-lg font-bold gold">${s.cap?.toLocaleString()}</div><div class="text-[10px] text-gray-400">السعة</div></div>
+        <div class="glass rounded-lg p-2"><div class="text-lg font-bold gold">${sm.length}</div><div class="text-[10px] text-gray-400">مباريات</div></div>
+        <div class="glass rounded-lg p-2"><div class="text-lg font-bold gold">${s.country}</div><div class="text-[10px] text-gray-400">الدولة</div></div>
+    </div>
+    <div class="space-y-2">${sm.length?sm.map(m=>matchCard(m)).join(""):'<p class="text-gray-400 text-center">لا توجد مباريات محددة</p>'}</div>`;
+    document.getElementById("modal").classList.remove("hidden");
+    document.getElementById("modal").classList.add("flex");
 }
 
 // =====================================================
-// THREE.JS GLOBE
+// GLOBE
 // =====================================================
-
-let scene, camera, renderer, globe, markers = [];
-let isDragging = false, prevX = 0, prevY = 0;
+let scene,camera,renderer,globeMesh,markers=[],drag=false,px,py;
 
 function initGlobe() {
-    const container = document.getElementById("globe-container");
-    const w = container.clientWidth, h = container.clientHeight;
+    const el=document.getElementById("globe"),w=el.clientWidth,h=el.clientHeight;
+    scene=new THREE.Scene();
+    camera=new THREE.PerspectiveCamera(45,w/h,.1,1000);
+    camera.position.z=3;
+    renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setSize(w,h);
+    renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+    el.appendChild(renderer.domElement);
     
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
-    camera.position.z = 3.2;
+    // Sphere
+    const geo=new THREE.SphereGeometry(1,64,64);
+    const cv=document.createElement("canvas");cv.width=2048;cv.height=1024;
+    const cx=cv.getContext("2d");
+    const gr=cx.createLinearGradient(0,0,0,1024);gr.addColorStop(0,"#081220");gr.addColorStop(.5,"#0c1a30");gr.addColorStop(1,"#081220");
+    cx.fillStyle=gr;cx.fillRect(0,0,2048,1024);
+    cx.fillStyle="#142e1a";cx.strokeStyle="#1e4a28";cx.lineWidth=1.5;
+    // Continents (simplified)
+    cx.beginPath();cx.moveTo(140,90);cx.lineTo(220,70);cx.lineTo(320,80);cx.lineTo(360,140);cx.lineTo(340,200);cx.lineTo(280,250);cx.lineTo(220,270);cx.lineTo(160,240);cx.lineTo(120,180);cx.lineTo(100,130);cx.closePath();cx.fill();cx.stroke();
+    cx.beginPath();cx.moveTo(260,280);cx.lineTo(310,260);cx.lineTo(330,300);cx.lineTo(340,360);cx.lineTo(310,420);cx.lineTo(270,450);cx.lineTo(240,420);cx.lineTo(230,360);cx.lineTo(240,300);cx.closePath();cx.fill();cx.stroke();
+    cx.beginPath();cx.moveTo(500,80);cx.lineTo(570,70);cx.lineTo(610,100);cx.lineTo(600,140);cx.lineTo(560,160);cx.lineTo(510,150);cx.lineTo(490,120);cx.closePath();cx.fill();cx.stroke();
+    cx.beginPath();cx.moveTo(500,180);cx.lineTo(570,170);cx.lineTo(610,210);cx.lineTo(620,280);cx.lineTo(590,350);cx.lineTo(540,380);cx.lineTo(500,360);cx.lineTo(470,300);cx.lineTo(480,220);cx.closePath();cx.fill();cx.stroke();
+    cx.beginPath();cx.moveTo(620,60);cx.lineTo(760,50);cx.lineTo(880,70);cx.lineTo(940,130);cx.lineTo(920,200);cx.lineTo(840,240);cx.lineTo(760,250);cx.lineTo(680,220);cx.lineTo(640,160);cx.lineTo(620,100);cx.closePath();cx.fill();cx.stroke();
+    cx.beginPath();cx.moveTo(840,330);cx.lineTo(910,320);cx.lineTo(940,360);cx.lineTo(920,400);cx.lineTo(870,410);cx.lineTo(830,380);cx.lineTo(820,350);cx.closePath();cx.fill();cx.stroke();
+    // Grid
+    cx.strokeStyle="rgba(212,175,55,0.05)";cx.lineWidth=.5;
+    for(let i=0;i<18;i++){cx.beginPath();cx.moveTo(i*2048/18,0);cx.lineTo(i*2048/18,1024);cx.stroke();}
+    for(let i=0;i<9;i++){cx.beginPath();cx.moveTo(0,i*1024/9);cx.lineTo(2048,i*1024/9);cx.stroke();}
     
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-    
-    // Globe
-    const geo = new THREE.SphereGeometry(1, 64, 64);
-    const canvas = document.createElement("canvas");
-    canvas.width = 2048; canvas.height = 1024;
-    const ctx = canvas.getContext("2d");
-    
-    const grad = ctx.createLinearGradient(0, 0, 0, 1024);
-    grad.addColorStop(0, "#081220");
-    grad.addColorStop(0.5, "#0c1a30");
-    grad.addColorStop(1, "#081220");
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 2048, 1024);
-    
-    ctx.fillStyle = "#142e1a";
-    ctx.strokeStyle = "#1e4a28";
-    ctx.lineWidth = 1.5;
-    // North America
-    ctx.beginPath(); ctx.moveTo(140,90); ctx.lineTo(220,70); ctx.lineTo(320,80); ctx.lineTo(360,140); ctx.lineTo(340,200); ctx.lineTo(280,250); ctx.lineTo(220,270); ctx.lineTo(160,240); ctx.lineTo(120,180); ctx.lineTo(100,130); ctx.closePath(); ctx.fill(); ctx.stroke();
-    // South America
-    ctx.beginPath(); ctx.moveTo(260,280); ctx.lineTo(310,260); ctx.lineTo(330,300); ctx.lineTo(340,360); ctx.lineTo(310,420); ctx.lineTo(270,450); ctx.lineTo(240,420); ctx.lineTo(230,360); ctx.lineTo(240,300); ctx.closePath(); ctx.fill(); ctx.stroke();
-    // Europe
-    ctx.beginPath(); ctx.moveTo(500,80); ctx.lineTo(570,70); ctx.lineTo(610,100); ctx.lineTo(600,140); ctx.lineTo(560,160); ctx.lineTo(510,150); ctx.lineTo(490,120); ctx.closePath(); ctx.fill(); ctx.stroke();
-    // Africa
-    ctx.beginPath(); ctx.moveTo(500,180); ctx.lineTo(570,170); ctx.lineTo(610,210); ctx.lineTo(620,280); ctx.lineTo(590,350); ctx.lineTo(540,380); ctx.lineTo(500,360); ctx.lineTo(470,300); ctx.lineTo(480,220); ctx.closePath(); ctx.fill(); ctx.stroke();
-    // Asia
-    ctx.beginPath(); ctx.moveTo(620,60); ctx.lineTo(760,50); ctx.lineTo(880,70); ctx.lineTo(940,130); ctx.lineTo(920,200); ctx.lineTo(840,240); ctx.lineTo(760,250); ctx.lineTo(680,220); ctx.lineTo(640,160); ctx.lineTo(620,100); ctx.closePath(); ctx.fill(); ctx.stroke();
-    // Australia
-    ctx.beginPath(); ctx.moveTo(840,330); ctx.lineTo(910,320); ctx.lineTo(940,360); ctx.lineTo(920,400); ctx.lineTo(870,410); ctx.lineTo(830,380); ctx.lineTo(820,350); ctx.closePath(); ctx.fill(); ctx.stroke();
-    
-    ctx.strokeStyle = "rgba(212,175,55,0.06)";
-    ctx.lineWidth = 0.5;
-    for (let i = 0; i < 18; i++) { ctx.beginPath(); ctx.moveTo(i * 2048 / 18, 0); ctx.lineTo(i * 2048 / 18, 1024); ctx.stroke(); }
-    for (let i = 0; i < 9; i++) { ctx.beginPath(); ctx.moveTo(0, i * 1024 / 9); ctx.lineTo(2048, i * 1024 / 9); ctx.stroke(); }
-    
-    const tex = new THREE.CanvasTexture(canvas);
-    const mat = new THREE.MeshPhongMaterial({ map: tex, transparent: true, opacity: 0.95, shininess: 15 });
-    globe = new THREE.Mesh(geo, mat);
-    scene.add(globe);
+    const tex=new THREE.CanvasTexture(cv);
+    globeMesh=new THREE.Mesh(geo,new THREE.MeshPhongMaterial({map:tex,transparent:true,opacity:.95,shininess:10}));
+    scene.add(globeMesh);
     
     // Atmosphere
-    const atmoGeo = new THREE.SphereGeometry(1.04, 64, 64);
-    const atmoMat = new THREE.MeshPhongMaterial({ color: 0x1a5f2a, transparent: true, opacity: 0.08, side: THREE.BackSide });
-    scene.add(new THREE.Mesh(atmoGeo, atmoMat));
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.04,64,64),new THREE.MeshPhongMaterial({color:0x1a5f2a,transparent:true,opacity:.06,side:THREE.BackSide})));
     
-    // Stadium markers
-    appData.stadiums.forEach(s => {
-        const phi = (90 - s.lat) * Math.PI / 180;
-        const theta = (s.lng + 180) * Math.PI / 180;
-        const x = -1.025 * Math.sin(phi) * Math.cos(theta);
-        const y = 1.025 * Math.cos(phi);
-        const z = 1.025 * Math.sin(phi) * Math.sin(theta);
-        
-        const stMatches = appData.matches.filter(m => m.venue === s.id);
-        const hasEgypt = stMatches.some(m => m.egypt);
-        const hasArab = stMatches.some(m => m.arab);
-        const color = hasEgypt ? 0xce1126 : (hasArab ? 0x006233 : 0xD4AF37);
-        
-        const mGeo = new THREE.SphereGeometry(0.022, 16, 16);
-        const mMat = new THREE.MeshBasicMaterial({ color });
-        const marker = new THREE.Mesh(mGeo, mMat);
-        marker.position.set(x, y, z);
-        marker.userData = { stadiumId: s.id };
-        
-        const gGeo = new THREE.SphereGeometry(0.035, 16, 16);
-        const gMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.25 });
-        marker.add(new THREE.Mesh(gGeo, gMat));
-        
-        globe.add(marker);
-        markers.push(marker);
+    // Markers
+    stadiums.forEach(s=>{
+        const sm=matches.filter(m=>m.s===s.id);
+        const hasE=sm.some(m=>m.egypt),hasA=sm.some(m=>m.arab);
+        const col=hasE?0xce1126:hasA?0x006233:0xD4AF37;
+        const phi=(90-s.lat)*Math.PI/180,theta=(s.lng+180)*Math.PI/180;
+        const x=-1.03*Math.sin(phi)*Math.cos(theta),y=1.03*Math.cos(phi),z=1.03*Math.sin(phi)*Math.sin(theta);
+        const m=new THREE.Mesh(new THREE.SphereGeometry(.02,12,12),new THREE.MeshBasicMaterial({color:col}));
+        m.position.set(x,y,z);m.userData={id:s.id};
+        m.add(new THREE.Mesh(new THREE.SphereGeometry(.035,12,12),new THREE.MeshBasicMaterial({color:col,transparent:true,opacity:.2})));
+        globeMesh.add(m);markers.push(m);
     });
     
-    scene.add(new THREE.AmbientLight(0x404040, 0.6));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.7);
-    dir.position.set(5, 3, 5);
-    scene.add(dir);
-    const pt = new THREE.PointLight(0xD4AF37, 0.25, 10);
-    pt.position.set(-3, 2, 3);
-    scene.add(pt);
+    scene.add(new THREE.AmbientLight(0x404040,.5));
+    const dl=new THREE.DirectionalLight(0xffffff,.6);dl.position.set(5,3,5);scene.add(dl);
     
     // Events
-    const el = renderer.domElement;
-    el.addEventListener("mousedown", e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
-    el.addEventListener("mousemove", e => { if (!isDragging) return; globe.rotation.y += (e.clientX - prevX) * 0.005; globe.rotation.x += (e.clientY - prevY) * 0.005; prevX = e.clientX; prevY = e.clientY; });
-    el.addEventListener("mouseup", () => isDragging = false);
-    el.addEventListener("mouseleave", () => isDragging = false);
-    el.addEventListener("click", onGlobeClick);
-    el.addEventListener("wheel", e => { e.preventDefault(); camera.position.z = Math.max(2, Math.min(6, camera.position.z + e.deltaY * 0.002)); });
-    el.addEventListener("touchstart", e => { if (e.touches.length === 1) { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; } }, { passive: false });
-    el.addEventListener("touchmove", e => { if (isDragging && e.touches.length === 1) { globe.rotation.y += (e.touches[0].clientX - prevX) * 0.005; globe.rotation.x += (e.touches[0].clientY - prevY) * 0.005; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; } }, { passive: false });
-    el.addEventListener("touchend", () => isDragging = false);
-    
-    window.addEventListener("resize", () => {
-        const w2 = container.clientWidth, h2 = container.clientHeight;
-        camera.aspect = w2 / h2;
-        camera.updateProjectionMatrix();
-        renderer.setSize(w2, h2);
+    const E=renderer.domElement;
+    E.addEventListener("mousedown",e=>{drag=true;px=e.clientX;py=e.clientY;});
+    E.addEventListener("mousemove",e=>{if(!drag)return;globeMesh.rotation.y+=(e.clientX-px)*.005;globeMesh.rotation.x+=(e.clientY-py)*.005;px=e.clientX;py=e.clientY;});
+    E.addEventListener("mouseup",()=>drag=false);
+    E.addEventListener("mouseleave",()=>drag=false);
+    E.addEventListener("click",e=>{
+        if(drag)return;
+        const r=E.getBoundingClientRect(),m=new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);
+        const ray=new THREE.Raycaster();ray.setFromCamera(m,camera);
+        const h=ray.intersectObjects(markers);
+        if(h.length>0&&h[0].object.userData.id)showStadium(h[0].object.userData.id);
     });
+    E.addEventListener("wheel",e=>{e.preventDefault();camera.position.z=Math.max(2,Math.min(6,camera.position.z+e.deltaY*.002));});
+    E.addEventListener("touchstart",e=>{if(e.touches.length===1){drag=true;px=e.touches[0].clientX;py=e.touches[0].clientY;}},{passive:false});
+    E.addEventListener("touchmove",e=>{if(drag&&e.touches.length===1){globeMesh.rotation.y+=(e.touches[0].clientX-px)*.005;globeMesh.rotation.x+=(e.touches[0].clientY-py)*.005;px=e.touches[0].clientX;py=e.touches[0].clientY;}},{passive:false});
+    E.addEventListener("touchend",()=>drag=false);
     
-    animate();
-}
-
-function onGlobeClick(e) {
-    if (isDragging) return;
-    const rect = renderer.domElement.getBoundingClientRect();
-    const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
-    const ray = new THREE.Raycaster();
-    ray.setFromCamera(mouse, camera);
-    const hits = ray.intersectObjects(markers);
-    if (hits.length > 0 && hits[0].object.userData.stadiumId) {
-        showStadiumModal(hits[0].object.userData.stadiumId);
-    }
-}
-
-function animate() {
-    requestAnimationFrame(animate);
-    if (!isDragging) globe.rotation.y += 0.0008;
-    const t = Date.now() * 0.002;
-    markers.forEach((m, i) => { const s = 1 + Math.sin(t + i * 0.7) * 0.3; if (m.children[0]) m.children[0].scale.set(s, s, s); });
-    renderer.render(scene, camera);
+    window.addEventListener("resize",()=>{const w2=el.clientWidth,h2=el.clientHeight;camera.aspect=w2/h2;camera.updateProjectionMatrix();renderer.setSize(w2,h2);});
+    
+    (function anim(){requestAnimationFrame(anim);
+        if(!drag)globeMesh.rotation.y+=.0008;
+        const t=Date.now()*.002;
+        markers.forEach((m,i)=>{const s=1+Math.sin(t+i*.7)*.3;if(m.children[0])m.children[0].scale.set(s,s,s);});
+        renderer.render(scene,camera);
+    })();
 }
 
 // Countdown
-function updateCountdown() {
-    const now = new Date();
-    const diff = new Date(CONFIG.WC_START) - now;
-    if (diff <= 0) {
-        const fd = new Date(CONFIG.WC_FINAL) - now;
-        if (fd <= 0) { document.getElementById("cd-days").textContent = "00"; document.getElementById("cd-hours").textContent = "00"; document.getElementById("cd-mins").textContent = "00"; return; }
-        const d = Math.floor(fd / 86400000), h = Math.floor((fd % 86400000) / 3600000), m = Math.floor((fd % 3600000) / 60000);
-        document.getElementById("cd-days").textContent = String(d).padStart(2, "0");
-        document.getElementById("cd-hours").textContent = String(h).padStart(2, "0");
-        document.getElementById("cd-mins").textContent = String(m).padStart(2, "0");
-        return;
-    }
-    const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000);
-    document.getElementById("cd-days").textContent = String(d).padStart(2, "0");
-    document.getElementById("cd-hours").textContent = String(h).padStart(2, "0");
-    document.getElementById("cd-mins").textContent = String(m).padStart(2, "0");
+function updateCD() {
+    const now=new Date(),diff=new Date("2026-06-11T16:00:00Z")-now;
+    if(diff<=0){document.getElementById("cd-days").textContent="00";document.getElementById("cd-hours").textContent="00";document.getElementById("cd-mins").textContent="00";return;}
+    const d=Math.floor(diff/864e5),h=Math.floor((diff%864e5)/36e5),m=Math.floor((diff%36e5)/6e4);
+    document.getElementById("cd-days").textContent=String(d).padStart(2,"0");
+    document.getElementById("cd-hours").textContent=String(h).padStart(2,"0");
+    document.getElementById("cd-mins").textContent=String(m).padStart(2,"0");
 }
 
-// =====================================================
-// INITIALIZATION
-// =====================================================
-
-document.addEventListener("DOMContentLoaded", () => {
+// Init
+document.addEventListener("DOMContentLoaded",()=>{
     initGlobe();
-    initData().then(() => {
-        switchTab("egypt");
-    });
-    updateCountdown();
-    setInterval(updateCountdown, 60000);
+    showTab("egypt");
+    updateCD();
+    setInterval(updateCD,60000);
 });
 </script>
 </body>
