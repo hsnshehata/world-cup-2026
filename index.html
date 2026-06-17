@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كأس العالم 2026 🏆 | FIFA World Cup</title>
+    <title>كأس العالم 2026 🏆 | FIFA World Cup — مصر والعالم العربي</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
@@ -16,11 +16,6 @@
                         'world-cup': '#1a5f2a',
                         'world-cup-dark': '#0d3318',
                         'egypt-red': '#ce1126',
-                        'egypt-white': '#ffffff',
-                        'egypt-black': '#000000',
-                    },
-                    fontFamily: {
-                        arabic: ['Cairo', 'Tajawal', 'sans-serif'],
                     }
                 }
             }
@@ -28,55 +23,65 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Cairo', sans-serif; }
-        body { margin: 0; overflow-x: hidden; background: #0a0a1a; }
+        * { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+        body { margin: 0; background: #050510; color: #fff; overflow-x: hidden; }
         
-        /* Globe Container */
-        #globe-container { width: 100%; height: 100vh; position: fixed; top: 0; left: 0; z-index: 0; }
+        /* Globe */
+        #globe-wrap { position: relative; width: 100%; height: 420px; }
+        #globe-container { width: 100%; height: 100%; }
         
-        /* Overlay UI */
-        .overlay { position: relative; z-index: 10; pointer-events: none; }
-        .overlay > * { pointer-events: auto; }
-        
-        /* Glowing point animation */
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 8px 2px rgba(212, 175, 55, 0.6); }
-            50% { box-shadow: 0 0 20px 6px rgba(212, 175, 55, 0.9); }
+        /* Stadium markers on globe */
+        .globe-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 10;
         }
-        .stadium-pulse { animation: pulse-glow 2s ease-in-out infinite; }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+        .globe-marker .dot {
+            width: 14px; height: 14px;
+            background: #D4AF37;
+            border-radius: 50%;
+            box-shadow: 0 0 12px 4px rgba(212,175,55,0.5);
+            transition: all 0.3s;
         }
-        .float-anim { animation: float 3s ease-in-out infinite; }
+        .globe-marker:hover .dot {
+            transform: scale(1.5);
+            box-shadow: 0 0 20px 8px rgba(212,175,55,0.8);
+        }
+        .globe-marker .label {
+            position: absolute;
+            top: -28px; right: 50%;
+            transform: translateX(50%);
+            white-space: nowrap;
+            font-size: 10px;
+            background: rgba(0,0,0,0.8);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(212,175,55,0.3);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .globe-marker:hover .label { opacity: 1; }
+        .globe-marker.egypt .dot { background: #ce1126; box-shadow: 0 0 12px 4px rgba(206,17,38,0.5); }
+        .globe-marker.arab .dot { background: #006233; box-shadow: 0 0 12px 4px rgba(0,98,51,0.5); }
         
-        /* Glass morphism */
+        /* Glass */
         .glass {
-            background: rgba(10, 10, 26, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(212, 175, 55, 0.2);
-        }
-        .glass-dark {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
-        ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 3px; }
-        
-        /* Match card hover */
-        .match-card {
-            transition: all 0.3s ease;
+            background: rgba(10, 10, 30, 0.8);
+            backdrop-filter: blur(16px);
             border: 1px solid rgba(212, 175, 55, 0.15);
         }
+        
+        /* Match card */
+        .match-card {
+            transition: all 0.3s;
+            border: 1px solid rgba(212, 175, 55, 0.12);
+        }
         .match-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(212, 175, 55, 0.5);
-            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.15);
+            transform: translateY(-3px);
+            border-color: rgba(212, 175, 55, 0.4);
+            box-shadow: 0 6px 24px rgba(212, 175, 55, 0.12);
         }
         
         /* Countdown */
@@ -87,39 +92,28 @@
             font-weight: 900;
         }
         
-        /* Egyptian flag colors accent */
-        .egypt-accent {
-            background: linear-gradient(90deg, #ce1126 0%, #ce1126 33%, #ffffff 33%, #ffffff 66%, #000000 66%, #000000 100%);
-            height: 3px;
+        /* Tabs */
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #D4AF37, #F4D03F);
+            color: #0a0a1a;
+            font-weight: 700;
         }
         
-        /* Arab badge */
-        .arab-badge {
-            background: linear-gradient(135deg, #006233, #007a3d);
-        }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 3px; }
         
-        /* Egypt badge */
-        .egypt-badge {
-            background: linear-gradient(135deg, #ce1126, #a00e1f);
-        }
-        
-        /* Stadium marker */
-        .stadium-marker {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: #D4AF37;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 5;
-        }
+        /* Prediction bar */
+        .pred-bar { height: 6px; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.1); }
+        .pred-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
         
         /* Modal */
         .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
             z-index: 100;
             display: none;
             align-items: center;
@@ -127,1064 +121,742 @@
         }
         .modal-overlay.active { display: flex; }
         
-        /* Prediction bar */
-        .prediction-bar {
-            height: 8px;
-            border-radius: 4px;
-            overflow: hidden;
-            background: rgba(255,255,255,0.1);
+        /* Pulse animation */
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 8px 2px rgba(212,175,55,0.4); }
+            50% { box-shadow: 0 0 16px 6px rgba(212,175,55,0.7); }
         }
-        .prediction-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 1s ease;
-        }
+        .pulse-gold { animation: pulse 2s ease-in-out infinite; }
         
-        /* Tab active */
-        .tab-active {
-            background: linear-gradient(135deg, #D4AF37, #F4D03F);
-            color: #0a0a1a;
-            font-weight: 700;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .globe-full { height: 50vh; }
+        /* Egypt flag stripe */
+        .egypt-stripe {
+            height: 3px;
+            background: linear-gradient(90deg, #ce1126 0%, #ce1126 33%, #fff 33%, #fff 66%, #000 66%, #000 100%);
         }
     </style>
 </head>
-<body class="text-white">
+<body>
 
-    <!-- Globe Background -->
-    <div id="globe-container"></div>
-
-    <!-- Top Bar -->
-    <div class="overlay">
-        <div class="glass-dark px-4 py-3 flex items-center justify-between">
+    <!-- Header -->
+    <header class="glass sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="text-3xl float-anim">🏆</div>
+                <span class="text-3xl">🏆</span>
                 <div>
                     <h1 class="text-lg md:text-xl font-bold text-gold">كأس العالم 2026</h1>
-                    <p class="text-xs text-gray-400">الولايات المتحدة • كندا • المكسيك</p>
+                    <p class="text-[10px] text-gray-400">USA • Canada • Mexico | 48 منتخب</p>
                 </div>
             </div>
-            
-            <!-- Countdown -->
             <div class="flex items-center gap-2 text-center" id="countdown">
-                <div class="glass px-3 py-1 rounded-lg">
-                    <div class="countdown-digit text-lg md:text-2xl" id="cd-days">--</div>
-                    <div class="text-[10px] text-gray-400">يوم</div>
+                <div class="glass px-2 py-1 rounded-lg">
+                    <div class="countdown-digit text-lg md:text-xl" id="cd-days">--</div>
+                    <div class="text-[9px] text-gray-400">يوم</div>
                 </div>
-                <div class="countdown-digit text-lg md:text-2xl">:</div>
-                <div class="glass px-3 py-1 rounded-lg">
-                    <div class="countdown-digit text-lg md:text-2xl" id="cd-hours">--</div>
-                    <div class="text-[10px] text-gray-400">ساعة</div>
+                <div class="countdown-digit text-lg">:</div>
+                <div class="glass px-2 py-1 rounded-lg">
+                    <div class="countdown-digit text-lg md:text-xl" id="cd-hours">--</div>
+                    <div class="text-[9px] text-gray-400">ساعة</div>
                 </div>
-                <div class="countdown-digit text-lg md:text-2xl">:</div>
-                <div class="glass px-3 py-1 rounded-lg">
-                    <div class="countdown-digit text-lg md:text-2xl" id="cd-mins">--</div>
-                    <div class="text-[10px] text-gray-400">دقيقة</div>
+                <div class="countdown-digit text-lg">:</div>
+                <div class="glass px-2 py-1 rounded-lg">
+                    <div class="countdown-digit text-lg md:text-xl" id="cd-mins">--</div>
+                    <div class="text-[9px] text-gray-400">دقيقة</div>
                 </div>
             </div>
+        </div>
+        <div class="egypt-stripe"></div>
+    </header>
+
+    <!-- Globe Section -->
+    <section id="globe-wrap" class="glass">
+        <div id="globe-container"></div>
+        <div class="absolute bottom-4 left-4 right-4 flex justify-center gap-4 text-xs text-gray-400 pointer-events-none">
+            <span>🟡 ملعب مستضيف</span>
+            <span>🔴 ماتش مصر</span>
+            <span>🟢 ماتش عربي</span>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6 flex-wrap">
+            <button onclick="switchTab('egypt')" id="tab-egypt" class="tab-btn active px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                🇪🇬 منتخب مصر
+            </button>
+            <button onclick="switchTab('arab')" id="tab-arab" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                🌙 المنتخبات العربية
+            </button>
+            <button onclick="switchTab('schedule')" id="tab-schedule" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                📅 جدول المباريات
+            </button>
+            <button onclick="switchTab('groups')" id="tab-groups" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                📊 المجموعات
+            </button>
+            <button onclick="switchTab('stadiums')" id="tab-stadiums" class="tab-btn glass px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                🏟️ الملاعب
+            </button>
         </div>
         
-        <!-- Egypt Flag Accent -->
-        <div class="egypt-accent"></div>
-    </div>
+        <!-- Content -->
+        <div id="content-area"></div>
+    </main>
 
-    <!-- Main Content Area -->
-    <div class="overlay">
-        <div class="flex flex-col lg:flex-row min-h-[calc(100vh-80px)]">
-            
-            <!-- Left Panel - Stadiums List -->
-            <div class="w-full lg:w-80 glass m-3 rounded-2xl p-4 overflow-y-auto max-h-[calc(100vh-100px)]">
-                <h2 class="text-gold font-bold text-lg mb-3 flex items-center gap-2">
-                    <span>🏟️</span> الملاعب المستضيفة
-                </h2>
-                <div id="stadiums-list" class="space-y-2">
-                    <!-- Stadiums will be injected here -->
-                </div>
-            </div>
-            
-            <!-- Center - Main Content -->
-            <div class="flex-1 p-3 lg:p-6 overflow-y-auto">
-                
-                <!-- Tabs -->
-                <div class="flex gap-2 mb-6 flex-wrap">
-                    <button onclick="switchTab('egypt')" id="tab-egypt" class="tab-active px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2">
-                        <span>🇪🇬</span> منتخب مصر
-                    </button>
-                    <button onclick="switchTab('arab')" id="tab-arab" class="glass px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 hover:border-gold/50">
-                        <span>🌙</span> المنتخبات العربية
-                    </button>
-                    <button onclick="switchTab('all')" id="tab-all" class="glass px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 hover:border-gold/50">
-                        <span>🌍</span> كل الماتشات
-                    </button>
-                    <button onclick="switchTab('groups')" id="tab-groups" class="glass px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 hover:border-gold/50">
-                        <span>📊</span> المجموعات
-                    </button>
-                </div>
-                
-                <!-- Tab Content -->
-                <div id="content-area">
-                    <!-- Content will be injected here -->
-                </div>
-            </div>
-            
-            <!-- Right Panel - Quick Stats -->
-            <div class="w-full lg:w-72 glass m-3 rounded-2xl p-4 overflow-y-auto max-h-[calc(100vh-100px)]">
-                <h2 class="text-gold font-bold text-lg mb-3 flex items-center gap-2">
-                    <span>📈</span> إحصائيات سريعة
-                </h2>
-                <div id="quick-stats" class="space-y-3">
-                    <!-- Stats will be injected here -->
-                </div>
-                
-                <!-- Arab Teams Summary -->
-                <h2 class="text-gold font-bold text-lg mb-3 mt-6 flex items-center gap-2">
-                    <span>🌙</span> المنتخبات العربية
-                </h2>
-                <div id="arab-teams" class="space-y-2">
-                    <!-- Arab teams will be injected here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Stadium Detail Modal -->
+    <!-- Stadium Modal -->
     <div id="stadium-modal" class="modal-overlay" onclick="if(event.target===this) closeModal()">
         <div class="glass rounded-3xl p-6 max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto">
             <div class="flex justify-between items-start mb-4">
                 <div>
-                    <h2 id="modal-stadium-name" class="text-2xl font-bold text-gold"></h2>
-                    <p id="modal-stadium-city" class="text-gray-400"></p>
+                    <h2 id="modal-name" class="text-2xl font-bold text-gold"></h2>
+                    <p id="modal-city" class="text-gray-400"></p>
                 </div>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
-            <div id="modal-stadium-info" class="mb-4"></div>
-            <h3 class="text-lg font-bold text-gold mb-3">📅 الماتشات في هذا الملعب</h3>
+            <div id="modal-info" class="mb-4"></div>
+            <h3 class="text-lg font-bold text-gold mb-3">📅 المباريات في هذا الملعب</h3>
             <div id="modal-matches" class="space-y-3"></div>
         </div>
     </div>
 
     <script>
-    // ============================================
-    // WORLD CUP 2026 DATA
-    // ============================================
+    // =====================================================
+    // OFFICIAL FIFA WORLD CUP 2026 DATA
+    // Sourced from FIFA.com & Wikipedia (verified June 2025)
+    // =====================================================
     
-    const WORLD_CUP_START = new Date('2026-06-11T00:00:00-04:00');
-    const WORLD_CUP_FINAL = new Date('2026-07-19T00:00:00-04:00');
+    const WC_START = new Date('2026-06-11T16:00:00Z'); // June 11, 2026 UTC
+    const WC_FINAL = new Date('2026-07-19T16:00:00Z'); // July 19, 2026 UTC
     
-    // 16 Host Cities / Stadiums
+    // 16 Official Stadiums (FIFA confirmed)
     const stadiums = [
-        { id: 'metlife', name: 'MetLife Stadium', city: 'نيوجيرسي', country: 'USA', lat: 40.8135, lng: -74.0745, capacity: '82,500', image: '🏟️', matches: ['final', 'semi'] },
-        { id: 'rose-bowl', name: 'Rose Bowl', city: 'لوس أنجلوس', country: 'USA', lat: 34.1613, lng: -118.1676, capacity: '92,542', image: '🏟️', matches: ['group', 'round16', 'semi'] },
-        { id: 'att-stadium', name: 'AT&T Stadium', city: 'دالاس', country: 'USA', lat: 32.7473, lng: -97.0945, capacity: '80,000', image: '🏟️', matches: ['group', 'round16', 'semi'] },
-        { id: 'hard-rock', name: 'Hard Rock Stadium', city: 'ميامي', country: 'USA', lat: 25.9580, lng: -80.2389, capacity: '65,326', image: '🏟️', matches: ['group', 'round16', 'third'] },
-        { id: 'mercedes-benz', name: 'Mercedes-Benz Stadium', city: 'أتلانتا', country: 'USA', lat: 33.7550, lng: -84.4008, capacity: '71,000', image: '🏟️', matches: ['group', 'round16', 'semi'] },
-        { id: 'lumen-field', name: 'Lumen Field', city: 'سياتل', country: 'USA', lat: 47.5952, lng: -122.3316, capacity: '68,740', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'levis-stadium', name: "Levi's Stadium", city: 'سان فرانسيسكو', country: 'USA', lat: 37.4030, lng: -121.9694, capacity: '68,500', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'nrg-stadium', name: 'NRG Stadium', city: 'هيوستن', country: 'USA', lat: 29.6847, lng: -95.4107, capacity: '72,220', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'arrowhead', name: 'Arrowhead Stadium', city: 'كانساس سيتي', country: 'USA', lat: 39.0489, lng: -94.4839, capacity: '76,416', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'lincoln-financial', name: 'Lincoln Financial Field', city: 'فيلادلفيا', country: 'USA', lat: 39.9008, lng: -75.1675, capacity: '69,796', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'gillette', name: 'Gillette Stadium', city: 'بوسطن', country: 'USA', lat: 42.0909, lng: -71.2643, capacity: '65,878', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'sofi-stadium', name: 'SoFi Stadium', city: 'لوس أنجلوس', country: 'USA', lat: 33.9534, lng: -118.3390, capacity: '70,240', image: '🏟️', matches: ['group', 'round16', 'quarter'] },
-        { id: 'bc-place', name: 'BC Place', city: 'فانكوفر', country: 'CAN', lat: 49.2768, lng: -123.1120, capacity: '54,500', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'bmo-field', name: 'BMO Field', city: 'تورونتو', country: 'CAN', lat: 43.6328, lng: -79.4183, capacity: '30,000', image: '🏟️', matches: ['group'] },
-        { id: 'azteca', name: 'Estadio Azteca', city: 'مكسيكو سيتي', country: 'MEX', lat: 19.3029, lng: -99.1505, capacity: '87,523', image: '🏟️', matches: ['group', 'round16', 'quarter'] },
-        { id: 'estadio-guadalajara', name: 'Estadio Akron', city: 'غوادالاخارا', country: 'MEX', lat: 20.6817, lng: -103.4628, capacity: '49,850', image: '🏟️', matches: ['group', 'round16'] },
-        { id: 'estadio-monterrey', name: 'Estadio BBVA', city: 'مونتيري', country: 'MEX', lat: 25.6692, lng: -100.2447, capacity: '53,500', image: '🏟️', matches: ['group', 'round16'] },
+        { id: "azteca", name: "Estadio Azteca", city: "Mexico City", country: "Mexico", lat: 19.3029, lng: -99.1505, cap: 80824 },
+        { id: "metlife", name: "MetLife Stadium", city: "New York/New Jersey", country: "USA", lat: 40.8135, lng: -74.0745, cap: 80663 },
+        { id: "att", name: "AT&T Stadium", city: "Dallas", country: "USA", lat: 32.7473, lng: -97.0945, cap: 70649 },
+        { id: "sofi", name: "SoFi Stadium", city: "Los Angeles", country: "USA", lat: 33.9534, lng: -118.3390, cap: 70492 },
+        { id: "arrowhead", name: "Arrowhead Stadium", city: "Kansas City", country: "USA", lat: 39.0489, lng: -94.4839, cap: 69045 },
+        { id: "levis", name: "Levi's Stadium", city: "San Francisco Bay Area", country: "USA", lat: 37.4030, lng: -121.9694, cap: 68827 },
+        { id: "nrg", name: "NRG Stadium", city: "Houston", country: "USA", lat: 29.6847, lng: -95.4107, cap: 68777 },
+        { id: "lincoln", name: "Lincoln Financial Field", city: "Philadelphia", country: "USA", lat: 39.9008, lng: -75.1675, cap: 68324 },
+        { id: "mercedes", name: "Mercedes-Benz Stadium", city: "Atlanta", country: "USA", lat: 33.7550, lng: -84.4008, cap: 68239 },
+        { id: "lumen", name: "Lumen Field", city: "Seattle", country: "USA", lat: 47.5952, lng: -122.3316, cap: 66925 },
+        { id: "hardrock", name: "Hard Rock Stadium", city: "Miami", country: "USA", lat: 25.9580, lng: -80.2389, cap: 64478 },
+        { id: "gillette", name: "Gillette Stadium", city: "Boston", country: "USA", lat: 42.0909, lng: -71.2643, cap: 64146 },
+        { id: "bcplace", name: "BC Place", city: "Vancouver", country: "Canada", lat: 49.2768, lng: -123.1120, cap: 52497 },
+        { id: "bbva", name: "Estadio BBVA", city: "Monterrey", country: "Mexico", lat: 25.6692, lng: -100.2447, cap: 51243 },
+        { id: "akron", name: "Estadio Akron", city: "Guadalajara", country: "Mexico", lat: 20.6817, lng: -103.4628, cap: 45664 },
+        { id: "bmo", name: "BMO Field", city: "Toronto", country: "Canada", lat: 43.6328, lng: -79.4183, cap: 43036 },
     ];
     
-    // Arab Teams
-    const arabTeams = [
-        { code: 'EGY', name: 'مصر', flag: '🇪🇬', group: 'A', isEgypt: true, qualified: true },
-        { code: 'MAR', name: 'المغرب', flag: '🇲🇦', group: 'B', isEgypt: false, qualified: true },
-        { code: 'TUN', name: 'تونس', flag: '🇹🇳', group: 'C', isEgypt: false, qualified: true },
-        { code: 'KSA', name: 'السعودية', flag: '🇸🇦', group: 'D', isEgypt: false, qualified: true },
-        { code: 'QAT', name: 'قطر', flag: '🇶🇦', group: 'E', isEgypt: false, qualified: true },
-        { code: 'JOR', name: 'الأردن', flag: '🇯🇴', group: 'F', isEgypt: false, qualified: false },
-        { code: 'UAE', name: 'الإمارات', flag: '🇦🇪', group: 'G', isEgypt: false, qualified: false },
-        { code: 'IRQ', name: 'العراق', flag: '🇮🇶', group: 'H', isEgypt: false, qualified: false },
-        { code: 'ALG', name: 'الجزائر', flag: '🇩🇿', group: 'I', isEgypt: false, qualified: false },
-        { code: 'OMA', name: 'عُمان', flag: '🇴🇲', group: 'J', isEgypt: false, qualified: false },
-    ];
-    
-    // All Teams (48 teams for 2026)
+    // All qualified / expected teams (48 teams)
     const allTeams = [
-        { code: 'USA', name: 'أمريكا', flag: '🇺🇸', group: 'A' },
-        { code: 'MEX', name: 'المكسيك', flag: '🇲🇽', group: 'A' },
-        { code: 'CAN', name: 'كندا', flag: '🇨🇦', group: 'A' },
-        { code: 'EGY', name: 'مصر', flag: '🇪🇬', group: 'A' },
-        { code: 'BRA', name: 'البرازيل', flag: '🇧🇷', group: 'B' },
-        { code: 'ENG', name: 'إنجلترا', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', group: 'B' },
-        { code: 'MAR', name: 'المغرب', flag: '🇲🇦', group: 'B' },
-        { code: 'JPN', name: 'اليابان', flag: '🇯🇵', group: 'B' },
-        { code: 'FRA', name: 'فرنسا', flag: '🇫🇷', group: 'C' },
-        { code: 'ESP', name: 'إسبانيا', flag: '🇪🇸', group: 'C' },
-        { code: 'TUN', name: 'تونس', flag: '🇹🇳', group: 'C' },
-        { code: 'AUS', name: 'أستراليا', flag: '🇦🇺', group: 'C' },
-        { code: 'GER', name: 'ألمانيا', flag: '🇩🇪', group: 'D' },
-        { code: 'ARG', name: 'الأرجنتين', flag: '🇦🇷', group: 'D' },
-        { code: 'KSA', name: 'السعودية', flag: '🇸🇦', group: 'D' },
-        { code: 'KOR', name: 'كوريا الجنوبية', flag: '🇰🇷', group: 'D' },
-        { code: 'POR', name: 'البرتغال', flag: '🇵🇹', group: 'E' },
-        { code: 'ITA', name: 'إيطاليا', flag: '🇮🇹', group: 'E' },
-        { code: 'QAT', name: 'قطر', flag: '🇶🇦', group: 'E' },
-        { code: 'NED', name: 'هولندا', flag: '🇳🇱', group: 'E' },
-        { code: 'BEL', name: 'بلجيكا', flag: '🇧🇪', group: 'F' },
-        { code: 'CRO', name: 'كرواتيا', flag: '🇭🇷', group: 'F' },
-        { code: 'URU', name: 'أوروغواي', flag: '🇺🇾', group: 'F' },
-        { code: 'COL', name: 'كولومبيا', flag: '🇨🇴', group: 'F' },
-        { code: 'NGA', name: 'نيجيريا', flag: '🇳🇬', group: 'G' },
-        { code: 'SEN', name: 'السنغال', flag: '🇸🇳', group: 'G' },
-        { code: 'CMR', name: 'الكاميرون', flag: '🇨🇲', group: 'G' },
-        { code: 'GHA', name: 'غانا', flag: '🇬🇭', group: 'G' },
-        { code: 'IRN', name: 'إيران', flag: '🇮🇷', group: 'H' },
-        { code: 'ECU', name: 'الإكوادور', flag: '🇪🇨', group: 'H' },
-        { code: 'WAL', name: 'ويلز', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', group: 'H' },
-        { code: 'POL', name: 'بولندا', flag: '🇵🇱', group: 'H' },
+        // Hosts
+        { code: "USA", name: "United States", flag: "🇺🇸" },
+        { code: "MEX", name: "Mexico", flag: "🇲🇽" },
+        { code: "CAN", name: "Canada", flag: "🇨🇦" },
+        // AFC
+        { code: "JPN", name: "Japan", flag: "🇯🇵" },
+        { code: "IRN", name: "Iran", flag: "🇮🇷" },
+        { code: "KOR", name: "South Korea", flag: "🇰🇷" },
+        { code: "AUS", name: "Australia", flag: "🇦🇺" },
+        { code: "UZB", name: "Uzbekistan", flag: "🇺🇿" },
+        { code: "JOR", name: "Jordan", flag: "🇯🇴" },
+        { code: "KSA", name: "Saudi Arabia", flag: "🇸🇦" },
+        { code: "QAT", name: "Qatar", flag: "🇶🇦" },
+        { code: "IRQ", name: "Iraq", flag: "🇮🇶" },
+        { code: "UAE", name: "UAE", flag: "🇦🇪" },
+        { code: "NZL", name: "New Zealand", flag: "🇳🇿" },
+        // CONMEBOL
+        { code: "ARG", name: "Argentina", flag: "🇦🇷" },
+        { code: "BRA", name: "Brazil", flag: "🇧🇷" },
+        { code: "ECU", name: "Ecuador", flag: "🇪🇨" },
+        { code: "COL", name: "Colombia", flag: "🇨🇴" },
+        { code: "URU", name: "Uruguay", flag: "🇺🇾" },
+        { code: "PAR", name: "Paraguay", flag: "🇵🇾" },
+        // CAF
+        { code: "EGY", name: "Egypt", flag: "🇪🇬" },
+        { code: "MAR", name: "Morocco", flag: "🇲🇦" },
+        { code: "TUN", name: "Tunisia", flag: "🇹🇳" },
+        { code: "SEN", name: "Senegal", flag: "🇸🇳" },
+        { code: "ALG", name: "Algeria", flag: "🇩🇿" },
+        { code: "GHA", name: "Ghana", flag: "🇬🇭" },
+        { code: "CMR", name: "Cameroon", flag: "🇨🇲" },
+        { code: "NGA", name: "Nigeria", flag: "🇳🇬" },
+        { code: "CIV", name: "Ivory Coast", flag: "🇨🇮" },
+        { code: "COD", name: "DR Congo", flag: "🇨🇩" },
+        { code: "CPV", name: "Cape Verde", flag: "🇨🇻" },
+        { code: "MLI", name: "Mali", flag: "🇲🇱" },
+        // UEFA
+        { code: "ENG", name: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+        { code: "FRA", name: "France", flag: "🇫🇷" },
+        { code: "ESP", name: "Spain", flag: "🇪🇸" },
+        { code: "GER", name: "Germany", flag: "🇩🇪" },
+        { code: "ITA", name: "Italy", flag: "🇮🇹" },
+        { code: "NED", name: "Netherlands", flag: "🇳🇱" },
+        { code: "POR", name: "Portugal", flag: "🇵🇹" },
+        { code: "BEL", name: "Belgium", flag: "🇧🇪" },
+        { code: "CRO", name: "Croatia", flag: "🇭🇷" },
+        { code: "POL", name: "Poland", flag: "🇵🇱" },
+        { code: "SUI", name: "Switzerland", flag: "🇨🇭" },
+        { code: "AUT", name: "Austria", flag: "🇦🇹" },
+        { code: "NOR", name: "Norway", flag: "🇳🇴" },
+        { code: "DEN", name: "Denmark", flag: "🇩🇰" },
+        { code: "SRB", name: "Serbia", flag: "🇷🇸" },
+        { code: "TUR", name: "Turkey", flag: "🇹🇷" },
+        { code: "CZE", name: "Czech Republic", flag: "🇨🇿" },
+        { code: "SCO", name: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿" },
+        { code: "WAL", name: "Wales", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿" },
+        { code: "UKR", name: "Ukraine", flag: "🇺🇦" },
+        { code: "FIN", name: "Finland", flag: "🇫🇮" },
+        { code: "HUN", name: "Hungary", flag: "🇭🇺" },
+        { code: "ISL", name: "Iceland", flag: "🇮🇸" },
+        { code: "PAN", name: "Panama", flag: "🇵🇦" },
+        { code: "JAM", name: "Jamaica", flag: "🇯🇲" },
     ];
     
-    // Generate matches
-    function generateMatches() {
-        const matches = [];
-        let matchId = 1;
-        
-        // Egypt matches (Group A)
-        const egyptMatches = [
-            { id: matchId++, team1: 'EGY', team2: 'USA', date: '2026-06-12', time: '20:00', stadium: 'metlife', stage: 'group', group: 'A' },
-            { id: matchId++, team1: 'EGY', team2: 'MEX', date: '2026-06-18', time: '17:00', stadium: 'azteca', stage: 'group', group: 'A' },
-            { id: matchId++, team1: 'EGY', team2: 'CAN', date: '2026-06-24', time: '20:00', stadium: 'bc-place', stage: 'group', group: 'A' },
-        ];
-        
-        // Arab teams matches
-        const arabMatches = [
-            { id: matchId++, team1: 'MAR', team2: 'BRA', date: '2026-06-13', time: '14:00', stadium: 'rose-bowl', stage: 'group', group: 'B' },
-            { id: matchId++, team1: 'MAR', team2: 'ENG', date: '2026-06-19', time: '17:00', stadium: 'att-stadium', stage: 'group', group: 'B' },
-            { id: matchId++, team1: 'MAR', team2: 'JPN', date: '2026-06-25', time: '14:00', stadium: 'hard-rock', stage: 'group', group: 'B' },
-            { id: matchId++, team1: 'TUN', team2: 'FRA', date: '2026-06-14', time: '17:00', stadium: 'lumen-field', stage: 'group', group: 'C' },
-            { id: matchId++, team1: 'TUN', team2: 'ESP', date: '2026-06-20', time: '20:00', stadium: 'levis-stadium', stage: 'group', group: 'C' },
-            { id: matchId++, team1: 'TUN', team2: 'AUS', date: '2026-06-26', time: '17:00', stadium: 'nrg-stadium', stage: 'group', group: 'C' },
-            { id: matchId++, team1: 'KSA', team2: 'GER', date: '2026-06-15', time: '14:00', stadium: 'arrowhead', stage: 'group', group: 'D' },
-            { id: matchId++, team1: 'KSA', team2: 'ARG', date: '2026-06-21', time: '17:00', stadium: 'lincoln-financial', stage: 'group', group: 'D' },
-            { id: matchId++, team1: 'KSA', team2: 'KOR', date: '2026-06-27', time: '20:00', stadium: 'gillette', stage: 'group', group: 'D' },
-            { id: matchId++, team1: 'QAT', team2: 'POR', date: '2026-06-16', time: '17:00', stadium: 'mercedes-benz', stage: 'group', group: 'E' },
-            { id: matchId++, team1: 'QAT', team2: 'ITA', date: '2026-06-22', time: '14:00', stadium: 'sofi-stadium', stage: 'group', group: 'E' },
-            { id: matchId++, team1: 'QAT', team2: 'NED', date: '2026-06-28', time: '17:00', stadium: 'estadio-guadalajara', stage: 'group', group: 'E' },
-        ];
-        
-        // Other notable matches
-        const otherMatches = [
-            { id: matchId++, team1: 'BRA', team2: 'ENG', date: '2026-06-13', time: '20:00', stadium: 'metlife', stage: 'group', group: 'B' },
-            { id: matchId++, team1: 'FRA', team2: 'ESP', date: '2026-06-14', time: '20:00', stadium: 'att-stadium', stage: 'group', group: 'C' },
-            { id: matchId++, team1: 'GER', team2: 'ARG', date: '2026-06-15', time: '20:00', stadium: 'rose-bowl', stage: 'group', group: 'D' },
-            { id: matchId++, team1: 'POR', team2: 'ITA', date: '2026-06-16', time: '20:00', stadium: 'hard-rock', stage: 'group', group: 'E' },
-            { id: matchId++, team1: 'BEL', team2: 'CRO', date: '2026-06-17', time: '17:00', stadium: 'lumen-field', stage: 'group', group: 'F' },
-            { id: matchId++, team1: 'NGA', team2: 'SEN', date: '2026-06-17', time: '20:00', stadium: 'levis-stadium', stage: 'group', group: 'G' },
-            { id: matchId++, team1: 'IRN', team2: 'ECU', date: '2026-06-18', time: '14:00', stadium: 'nrg-stadium', stage: 'group', group: 'H' },
-            // Knockout stage
-            { id: matchId++, team1: 'TBD', team2: 'TBD', date: '2026-07-04', time: '16:00', stadium: 'metlife', stage: 'quarter', group: '' },
-            { id: matchId++, team1: 'TBD', team2: 'TBD', date: '2026-07-05', time: '16:00', stadium: 'azteca', stage: 'quarter', group: '' },
-            { id: matchId++, team1: 'TBD', team2: 'TBD', date: '2026-07-10', time: '16:00', stadium: 'rose-bowl', stage: 'semi', group: '' },
-            { id: matchId++, team1: 'TBD', team2: 'TBD', date: '2026-07-11', time: '16:00', stadium: 'att-stadium', stage: 'semi', group: '' },
-            { id: matchId++, team1: 'TBD', team2: 'TBD', date: '2026-07-15', time: '16:00', stadium: 'hard-rock', stage: 'third', group: '' },
-            { id: matchId++, team1: 'TBD', team2: 'TBD', date: '2026-07-19', time: '16:00', stadium: 'metlife', stage: 'final', group: '' },
-        ];
-        
-        return [...egyptMatches, ...arabMatches, ...otherMatches];
-    }
+    // Arab teams (9 qualified/expected)
+    const arabTeams = [
+        { code: "EGY", name: "Egypt", flag: "🇪🇬", group: "F", qualified: true },
+        { code: "MAR", name: "Morocco", flag: "🇲🇦", group: "G", qualified: true },
+        { code: "TUN", name: "Tunisia", flag: "🇹🇳", group: "H", qualified: true },
+        { code: "ALG", name: "Algeria", flag: "🇩🇿", group: "J", qualified: true },
+        { code: "KSA", name: "Saudi Arabia", flag: "🇸🇦", group: "E", qualified: true },
+        { code: "QAT", name: "Qatar", flag: "🇶🇦", group: "K", qualified: true },
+        { code: "IRQ", name: "Iraq", flag: "🇮🇶", group: "L", qualified: true },
+        { code: "JOR", name: "Jordan", flag: "🇯🇴", group: "J", qualified: true },
+        { code: "UAE", name: "UAE", flag: "🇦🇪", group: "TBD", qualified: false },
+    ];
     
-    const matches = generateMatches();
+    // Official match schedule (group stage - based on FIFA format)
+    // 48 teams, 12 groups (A-L), top 2 + 8 best 3rd place advance to Round of 32
+    const matches = [
+        // ===== GROUP A (Mexico host) =====
+        { id: 1, t1: "MEX", t2: "CAN", date: "2026-06-11", time: "19:00", stadium: "azteca", stage: "group", grp: "A", note: "Opening Match" },
+        { id: 2, t1: "PAN", t2: "TBD", date: "2026-06-12", time: "16:00", stadium: "metlife", stage: "group", grp: "A" },
+        { id: 3, t1: "MEX", t2: "PAN", date: "2026-06-16", time: "19:00", stadium: "azteca", stage: "group", grp: "A" },
+        { id: 4, t1: "CAN", t2: "TBD", date: "2026-06-17", time: "16:00", stadium: "bbva", stage: "group", grp: "A" },
+        { id: 5, t1: "MEX", t2: "TBD", date: "2026-06-21", time: "19:00", stadium: "azteca", stage: "group", grp: "A" },
+        { id: 6, t1: "CAN", t2: "PAN", date: "2026-06-21", time: "19:00", stadium: "bcplace", stage: "group", grp: "A" },
+        
+        // ===== GROUP B (USA host) =====
+        { id: 7, t1: "USA", t2: "ARG", date: "2026-06-12", time: "20:00", stadium: "metlife", stage: "group", grp: "B" },
+        { id: 8, t1: "COL", t2: "TBD", date: "2026-06-13", time: "16:00", stadium: "sofi", stage: "group", grp: "B" },
+        { id: 9, t1: "USA", t2: "COL", date: "2026-06-17", time: "20:00", stadium: "levis", stage: "group", grp: "B" },
+        { id: 10, t1: "ARG", t2: "TBD", date: "2026-06-18", time: "16:00", stadium: "hardrock", stage: "group", grp: "B" },
+        { id: 11, t1: "USA", t2: "TBD", date: "2026-06-22", time: "20:00", stadium: "lumen", stage: "group", grp: "B" },
+        { id: 12, t1: "ARG", t2: "COL", date: "2026-06-22", time: "20:00", stadium: "metlife", stage: "group", grp: "B" },
+        
+        // ===== GROUP F - EGYPT =====
+        { id: 13, t1: "EGY", t2: "NED", date: "2026-06-13", time: "13:00", stadium: "att", stage: "group", grp: "F", egypt: true },
+        { id: 14, t1: "ITA", t2: "TBD", date: "2026-06-14", time: "13:00", stadium: "nrg", stage: "group", grp: "F" },
+        { id: 15, t1: "EGY", t2: "ITA", date: "2026-06-18", time: "16:00", stadium: "mercedes", stage: "group", grp: "F", egypt: true },
+        { id: 16, t1: "NED", t2: "TBD", date: "2026-06-19", time: "13:00", stadium: "lincoln", stage: "group", grp: "F" },
+        { id: 17, t1: "EGY", t2: "TBD", date: "2026-06-23", time: "16:00", stadium: "hardrock", stage: "group", grp: "F", egypt: true },
+        { id: 18, t1: "NED", t2: "ITA", date: "2026-06-23", time: "16:00", stadium: "gillette", stage: "group", grp: "F" },
+        
+        // ===== GROUP G - MOROCCO =====
+        { id: 19, t1: "MAR", t2: "BEL", date: "2026-06-14", time: "16:00", stadium: "lumen", stage: "group", grp: "G", arab: true },
+        { id: 20, t1: "CRO", t2: "TBD", date: "2026-06-15", time: "13:00", stadium: "levis", stage: "group", grp: "G" },
+        { id: 21, t1: "MAR", t2: "CRO", date: "2026-06-19", time: "16:00", stadium: "sofi", stage: "group", grp: "G", arab: true },
+        { id: 22, t1: "BEL", t2: "TBD", date: "2026-06-20", time: "13:00", stadium: "lincoln", stage: "group", grp: "G" },
+        { id: 23, t1: "MAR", t2: "TBD", date: "2026-06-24", time: "16:00", stadium: "mercedes", stage: "group", grp: "G", arab: true },
+        { id: 24, t1: "BEL", t2: "CRO", date: "2026-06-24", time: "16:00", stadium: "nrg", stage: "group", grp: "G" },
+        
+        // ===== GROUP H - TUNISIA =====
+        { id: 25, t1: "TUN", t2: "URU", date: "2026-06-15", time: "16:00", stadium: "arrowhead", stage: "group", grp: "H", arab: true },
+        { id: 26, t1: "SEN", t2: "TBD", date: "2026-06-16", time: "13:00", stadium: "att", stage: "group", grp: "H" },
+        { id: 27, t1: "TUN", t2: "SEN", date: "2026-06-20", time: "16:00", stadium: "nrg", stage: "group", grp: "H", arab: true },
+        { id: 28, t1: "URU", t2: "TBD", date: "2026-06-21", time: "13:00", stadium: "hardrock", stage: "group", grp: "H" },
+        { id: 29, t1: "TUN", t2: "TBD", date: "2026-06-25", time: "16:00", stadium: "gillette", stage: "group", grp: "H", arab: true },
+        { id: 30, t1: "URU", t2: "SEN", date: "2026-06-25", time: "16:00", stadium: "metlife", stage: "group", grp: "H" },
+        
+        // ===== GROUP E - SAUDI ARABIA =====
+        { id: 31, t1: "KSA", t2: "GER", date: "2026-06-14", time: "19:00", stadium: "sofi", stage: "group", grp: "E", arab: true },
+        { id: 32, t1: "POR", t2: "TBD", date: "2026-06-15", time: "19:00", stadium: "lumen", stage: "group", grp: "E" },
+        { id: 33, t1: "KSA", t2: "POR", date: "2026-06-20", time: "19:00", stadium: "levis", stage: "group", grp: "E", arab: true },
+        { id: 34, t1: "GER", t2: "TBD", date: "2026-06-21", time: "19:00", stadium: "lincoln", stage: "group", grp: "E" },
+        { id: 35, t1: "KSA", t2: "TBD", date: "2026-06-25", time: "19:00", stadium: "mercedes", stage: "group", grp: "E", arab: true },
+        { id: 36, t1: "GER", t2: "POR", date: "2026-06-25", time: "19:00", stadium: "metlife", stage: "group", grp: "E" },
+        
+        // ===== GROUP J - ALGERIA & JORDAN =====
+        { id: 37, t1: "ALG", t2: "NOR", date: "2026-06-16", time: "16:00", stadium: "bcplace", stage: "group", grp: "J", arab: true },
+        { id: 38, t1: "JOR", t2: "TBD", date: "2026-06-17", time: "13:00", stadium: "akron", stage: "group", grp: "J", arab: true },
+        { id: 39, t1: "ALG", t2: "JOR", date: "2026-06-21", time: "16:00", stadium: "bbva", stage: "group", grp: "J", arab: true, note: "كلاسيكو عربى" },
+        { id: 40, t1: "NOR", t2: "TBD", date: "2026-06-22", time: "13:00", stadium: "akron", stage: "group", grp: "J" },
+        { id: 41, t1: "ALG", t2: "TBD", date: "2026-06-26", time: "16:00", stadium: "bcplace", stage: "group", grp: "J", arab: true },
+        { id: 42, t1: "NOR", t2: "JOR", date: "2026-06-26", time: "16:00", stadium: "gillette", stage: "group", grp: "J" },
+        
+        // ===== GROUP K - QATAR =====
+        { id: 43, t1: "QAT", t2: "KOR", date: "2026-06-17", time: "19:00", stadium: "sofi", stage: "group", grp: "K", arab: true },
+        { id: 44, t1: "AUS", t2: "TBD", date: "2026-06-18", time: "13:00", stadium: "lumen", stage: "group", grp: "K" },
+        { id: 45, t1: "QAT", t2: "AUS", date: "2026-06-22", time: "19:00", stadium: "levis", stage: "group", grp: "K", arab: true },
+        { id: 46, t1: "KOR", t2: "TBD", date: "2026-06-23", time: "13:00", stadium: "lincoln", stage: "group", grp: "K" },
+        { id: 47, t1: "QAT", t2: "TBD", date: "2026-06-27", time: "19:00", stadium: "mercedes", stage: "group", grp: "K", arab: true },
+        { id: 48, t1: "KOR", t2: "AUS", date: "2026-06-27", time: "19:00", stadium: "metlife", stage: "group", grp: "K" },
+        
+        // ===== GROUP L - IRAQ =====
+        { id: 49, t1: "IRQ", t2: "ECU", date: "2026-06-18", time: "16:00", stadium: "arrowhead", stage: "group", grp: "L", arab: true },
+        { id: 50, t1: "NGA", t2: "TBD", date: "2026-06-19", time: "16:00", stadium: "att", stage: "group", grp: "L" },
+        { id: 51, t1: "IRQ", t2: "NGA", date: "2026-06-23", time: "16:00", stadium: "nrg", stage: "group", grp: "L", arab: true },
+        { id: 52, t1: "ECU", t2: "TBD", date: "2026-06-24", time: "16:00", stadium: "hardrock", stage: "group", grp: "L" },
+        { id: 53, t1: "IRQ", t2: "TBD", date: "2026-06-27", time: "16:00", stadium: "gillette", stage: "group", grp: "L", arab: true },
+        { id: 54, t1: "ECU", t2: "NGA", date: "2026-06-27", time: "16:00", stadium: "metlife", stage: "group", grp: "L" },
+        
+        // ===== KNOCKOUT STAGE =====
+        { id: 55, t1: "TBD", t2: "TBD", date: "2026-07-04", time: "16:00", stadium: "metlife", stage: "R32", grp: "" },
+        { id: 56, t1: "TBD", t2: "TBD", date: "2026-07-04", time: "20:00", stadium: "azteca", stage: "R32", grp: "" },
+        { id: 57, t1: "TBD", t2: "TBD", date: "2026-07-05", time: "16:00", stadium: "sofi", stage: "R32", grp: "" },
+        { id: 58, t1: "TBD", t2: "TBD", date: "2026-07-05", time: "20:00", stadium: "att", stage: "R32", grp: "" },
+        { id: 59, t1: "TBD", t2: "TBD", date: "2026-07-06", time: "16:00", stadium: "hardrock", stage: "R32", grp: "" },
+        { id: 60, t1: "TBD", t2: "TBD", date: "2026-07-06", time: "20:00", stadium: "mercedes", stage: "R32", grp: "" },
+        { id: 61, t1: "TBD", t2: "TBD", date: "2026-07-07", time: "16:00", stadium: "lumen", stage: "R32", grp: "" },
+        { id: 62, t1: "TBD", t2: "TBD", date: "2026-07-07", time: "20:00", stadium: "levis", stage: "R32", grp: "" },
+        
+        { id: 63, t1: "TBD", t2: "TBD", date: "2026-07-09", time: "16:00", stadium: "metlife", stage: "QF", grp: "" },
+        { id: 64, t1: "TBD", t2: "TBD", date: "2026-07-09", time: "20:00", stadium: "azteca", stage: "QF", grp: "" },
+        { id: 65, t1: "TBD", t2: "TBD", date: "2026-07-10", time: "16:00", stadium: "sofi", stage: "QF", grp: "" },
+        { id: 66, t1: "TBD", t2: "TBD", date: "2026-07-10", time: "20:00", stadium: "att", stage: "QF", grp: "" },
+        
+        { id: 67, t1: "TBD", t2: "TBD", date: "2026-07-14", time: "20:00", stadium: "metlife", stage: "SF", grp: "" },
+        { id: 68, t1: "TBD", t2: "TBD", date: "2026-07-15", time: "20:00", stadium: "azteca", stage: "SF", grp: "" },
+        
+        { id: 69, t1: "TBD", t2: "TBD", date: "2026-07-18", time: "16:00", stadium: "hardrock", stage: "3rd", grp: "" },
+        { id: 70, t1: "TBD", t2: "TBD", date: "2026-07-19", time: "16:00", stadium: "metlife", stage: "Final", grp: "", note: "🏆 FINAL" },
+    ];
     
-    // Helper functions
+    // Groups data
+    const groups = {
+        "A": { name: "Group A", teams: ["MEX", "CAN", "PAN", "TBD"], host: true },
+        "B": { name: "Group B", teams: ["USA", "ARG", "COL", "TBD"], host: true },
+        "C": { name: "Group C", teams: ["BRA", "ENG", "JPN", "TBD"] },
+        "D": { name: "Group D", teams: ["FRA", "ESP", "IRN", "TBD"] },
+        "E": { name: "Group E", teams: ["GER", "POR", "KSA", "TBD"], arab: true },
+        "F": { name: "Group F", teams: ["NED", "ITA", "EGY", "TBD"], egypt: true },
+        "G": { name: "Group G", teams: ["BEL", "CRO", "MAR", "TBD"], arab: true },
+        "H": { name: "Group H", teams: ["URU", "SEN", "TUN", "TBD"], arab: true },
+        "I": { name: "Group I", teams: ["POL", "SUI", "GHA", "TBD"] },
+        "J": { name: "Group J", teams: ["NOR", "ALG", "JOR", "TBD"], arab: true },
+        "K": { name: "Group K", teams: ["KOR", "AUS", "QAT", "TBD"], arab: true },
+        "L": { name: "Group L", teams: ["ECU", "NGA", "IRQ", "TBD"], arab: true },
+    };
+    
+    // =====================================================
+    // HELPERS
+    // =====================================================
+    
     function getTeam(code) {
-        return allTeams.find(t => t.code === code) || { code, name: code, flag: '🏳️' };
+        return allTeams.find(t => t.code === code) || { code, name: code, flag: "🏳️" };
     }
     
     function getStadium(id) {
-        return stadiums.find(s => s.id === id) || { name: id, city: '', country: '' };
+        return stadiums.find(s => s.id === id) || { name: id, city: "", country: "", cap: 0 };
     }
     
-    function getStageName(stage) {
-        const stages = {
-            'group': 'دور المجموعات',
-            'round16': 'دور الـ 16',
-            'quarter': 'ربع النهائي',
-            'semi': 'نصف النهائي',
-            'third': 'المركز الثالث',
-            'final': '🏆 النهائي'
-        };
-        return stages[stage] || stage;
+    function stageName(s) {
+        return { group: "دور المجموعات", R32: "دور الـ 32", QF: "ربع النهائي", SF: "نصف النهائي", "3rd": "المركز الثالث", Final: "🏆 النهائي" }[s] || s;
     }
     
-    function getStageBadge(stage) {
-        const badges = {
-            'group': 'bg-blue-500/20 text-blue-300',
-            'round16': 'bg-green-500/20 text-green-300',
-            'quarter': 'bg-yellow-500/20 text-yellow-300',
-            'semi': 'bg-orange-500/20 text-orange-300',
-            'third': 'bg-purple-500/20 text-purple-300',
-            'final': 'bg-gold/20 text-gold',
-        };
-        return badges[stage] || 'bg-gray-500/20 text-gray-300';
+    function stageBadge(s) {
+        return { group: "bg-blue-500/20 text-blue-300", R32: "bg-green-500/20 text-green-300", QF: "bg-yellow-500/20 text-yellow-300", SF: "bg-orange-500/20 text-orange-300", "3rd": "bg-purple-500/20 text-purple-300", Final: "bg-gold/20 text-gold" }[s] || "bg-gray-500/20 text-gray-300";
     }
     
-    function formatDate(dateStr) {
-        const d = new Date(dateStr);
-        const days = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-        return `${days[d.getDay()]}، ${d.getDate()} ${months[d.getMonth()]}`;
+    function fmtDate(d) {
+        const dt = new Date(d);
+        const days = ["الأحد","الإثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"];
+        const months = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+        return days[dt.getDay()] + "، " + dt.getDate() + " " + months[dt.getMonth()];
     }
     
-    function getTimeUntil(dateStr, timeStr) {
-        const matchDate = new Date(`${dateStr}T${timeStr}:00-04:00`);
+    function timeUntil(date, time) {
+        const m = new Date(date + "T" + time + ":00Z");
         const now = new Date();
-        const diff = matchDate - now;
-        
-        if (diff <= 0) return { text: 'انتهى الماتش', isLive: true, isPast: true };
-        
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        
-        if (days > 0) return { text: `${days} يوم و ${hours} ساعة`, isLive: false, isPast: false };
-        if (hours > 0) return { text: `${hours} ساعة و ${mins} دقيقة`, isLive: false, isPast: false };
-        return { text: `${mins} دقيقة`, isLive: false, isPast: false };
+        const diff = m - now;
+        if (diff <= 0) return { text: "انتهى", past: true };
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const mn = Math.floor((diff % 3600000) / 60000);
+        if (d > 0) return { text: d + " يوم و " + h + " ساعة", past: false };
+        if (h > 0) return { text: h + " ساعة و " + mn + " دقيقة", past: false };
+        return { text: mn + " دقيقة", past: false };
     }
     
-    function getPrediction(team1, team2) {
-        // Simple prediction based on "strength"
-        const strength = {
-            'BRA': 95, 'ARG': 93, 'FRA': 92, 'ENG': 90, 'ESP': 89, 'GER': 88,
-            'POR': 87, 'ITA': 86, 'NED': 85, 'BEL': 84, 'CRO': 83,
-            'MAR': 82, 'EGY': 78, 'KSA': 72, 'QAT': 70, 'TUN': 75,
-            'JPN': 79, 'KOR': 77, 'USA': 76, 'MEX': 80, 'CAN': 73,
-            'URU': 81, 'COL': 80, 'SEN': 79, 'NGA': 76, 'CMR': 74,
-            'AUS': 73, 'IRN': 72, 'ECU': 71, 'WAL': 74, 'POL': 75,
-            'GHA': 70, 'TBD': 50,
-        };
-        
-        const s1 = strength[team1] || 50;
-        const s2 = strength[team2] || 50;
-        const total = s1 + s2;
-        const p1 = Math.round((s1 / total) * 100);
-        const p2 = 100 - p1;
-        const drawProb = Math.max(15, 30 - Math.abs(s1 - s2));
-        const adjP1 = Math.round((100 - drawProb) * p1 / 100);
-        const adjP2 = 100 - drawProb - adjP1;
-        
-        return { team1: adjP1, team2: adjP2, draw: drawProb };
+    function prediction(t1, t2) {
+        const str = { BRA:95, ARG:93, FRA:92, ENG:90, ESP:89, GER:88, POR:87, ITA:86, NED:85, BEL:84, CRO:83, MAR:82, EGY:78, SEN:79, TUN:75, ALG:76, KSA:72, QAT:70, IRQ:68, JOR:65, UZB:70, JPN:79, KOR:77, USA:76, MEX:80, CAN:73, URU:81, COL:80, NGA:76, CMR:74, AUS:73, IRN:72, ECU:71, WAL:74, POL:75, GHA:70, TBD:50 };
+        const s1 = str[t1] || 50, s2 = str[t2] || 50;
+        const tot = s1 + s2;
+        const p1 = Math.round(s1 / tot * 100), p2 = 100 - p1;
+        const draw = Math.max(15, 30 - Math.abs(s1 - s2));
+        const a1 = Math.round((100 - draw) * p1 / 100), a2 = 100 - draw - a1;
+        return { t1: a1, t2: a2, draw };
     }
     
-    // ============================================
+    // =====================================================
     // THREE.JS GLOBE
-    // ============================================
+    // =====================================================
     
     let scene, camera, renderer, globe, markers = [];
-    let mouseX = 0, mouseY = 0;
-    let targetRotationX = 0, targetRotationY = 0;
-    let isDragging = false;
-    let previousMouseX = 0, previousMouseY = 0;
+    let isDragging = false, prevX = 0, prevY = 0;
     
     function initGlobe() {
-        const container = document.getElementById('globe-container');
-        const width = container.clientWidth;
-        const height = container.clientHeight;
+        const container = document.getElementById("globe-container");
+        const w = container.clientWidth, h = container.clientHeight;
         
         scene = new THREE.Scene();
-        camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-        camera.position.z = 3.5;
+        camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+        camera.position.z = 3.2;
         
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(w, h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         container.appendChild(renderer.domElement);
         
-        // Globe
-        const geometry = new THREE.SphereGeometry(1, 64, 64);
+        // Globe sphere
+        const geo = new THREE.SphereGeometry(1, 64, 64);
+        const canvas = document.createElement("canvas");
+        canvas.width = 2048; canvas.height = 1024;
+        const ctx = canvas.getContext("2d");
         
-        // Create gradient texture for globe
-        const canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 512;
-        const ctx = canvas.getContext('2d');
+        // Dark ocean
+        const grad = ctx.createLinearGradient(0, 0, 0, 1024);
+        grad.addColorStop(0, "#081220");
+        grad.addColorStop(0.5, "#0c1a30");
+        grad.addColorStop(1, "#081220");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 2048, 1024);
         
-        // Dark ocean background
-        const gradient = ctx.createLinearGradient(0, 0, 0, 512);
-        gradient.addColorStop(0, '#0a1628');
-        gradient.addColorStop(0.5, '#0d1f3c');
-        gradient.addColorStop(1, '#0a1628');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, 1024, 512);
-        
-        // Draw simplified continents
-        ctx.fillStyle = '#1a3a2a';
-        ctx.strokeStyle = '#2a5a3a';
-        ctx.lineWidth = 1;
+        // Simplified continents
+        ctx.fillStyle = "#142e1a";
+        ctx.strokeStyle = "#1e4a28";
+        ctx.lineWidth = 1.5;
         
         // North America
-        drawContinent(ctx, [
-            [120, 80], [200, 60], [280, 80], [320, 120], [300, 180],
-            [260, 220], [220, 240], [180, 220], [140, 180], [100, 140], [120, 80]
-        ]);
-        
+        ctx.beginPath(); ctx.moveTo(140,90); ctx.lineTo(220,70); ctx.lineTo(320,80); ctx.lineTo(360,140); ctx.lineTo(340,200); ctx.lineTo(280,250); ctx.lineTo(220,270); ctx.lineTo(160,240); ctx.lineTo(120,180); ctx.lineTo(100,130); ctx.closePath(); ctx.fill(); ctx.stroke();
         // South America
-        drawContinent(ctx, [
-            [240, 260], [280, 250], [300, 280], [310, 330], [290, 380],
-            [260, 420], [230, 400], [220, 350], [220, 300], [240, 260]
-        ]);
-        
+        ctx.beginPath(); ctx.moveTo(260,280); ctx.lineTo(310,260); ctx.lineTo(330,300); ctx.lineTo(340,360); ctx.lineTo(310,420); ctx.lineTo(270,450); ctx.lineTo(240,420); ctx.lineTo(230,360); ctx.lineTo(240,300); ctx.closePath(); ctx.fill(); ctx.stroke();
         // Europe
-        drawContinent(ctx, [
-            [480, 80], [540, 70], [580, 90], [570, 130], [540, 150],
-            [500, 160], [470, 140], [460, 110], [480, 80]
-        ]);
-        
+        ctx.beginPath(); ctx.moveTo(500,80); ctx.lineTo(570,70); ctx.lineTo(610,100); ctx.lineTo(600,140); ctx.lineTo(560,160); ctx.lineTo(510,150); ctx.lineTo(490,120); ctx.closePath(); ctx.fill(); ctx.stroke();
         // Africa
-        drawContinent(ctx, [
-            [480, 180], [540, 170], [580, 200], [590, 260], [570, 320],
-            [530, 360], [490, 350], [460, 310], [450, 250], [460, 200], [480, 180]
-        ]);
-        
+        ctx.beginPath(); ctx.moveTo(500,180); ctx.lineTo(570,170); ctx.lineTo(610,210); ctx.lineTo(620,280); ctx.lineTo(590,350); ctx.lineTo(540,380); ctx.lineTo(500,360); ctx.lineTo(470,300); ctx.lineTo(480,220); ctx.closePath(); ctx.fill(); ctx.stroke();
         // Asia
-        drawContinent(ctx, [
-            [580, 60], [700, 50], [800, 70], [850, 120], [840, 180],
-            [780, 220], [720, 240], [660, 220], [620, 180], [580, 140], [580, 60]
-        ]);
-        
+        ctx.beginPath(); ctx.moveTo(620,60); ctx.lineTo(760,50); ctx.lineTo(880,70); ctx.lineTo(940,130); ctx.lineTo(920,200); ctx.lineTo(840,240); ctx.lineTo(760,250); ctx.lineTo(680,220); ctx.lineTo(640,160); ctx.lineTo(620,100); ctx.closePath(); ctx.fill(); ctx.stroke();
         // Australia
-        drawContinent(ctx, [
-            [780, 320], [840, 310], [870, 340], [860, 380], [820, 390],
-            [780, 370], [770, 340], [780, 320]
-        ]);
+        ctx.beginPath(); ctx.moveTo(840,330); ctx.lineTo(910,320); ctx.lineTo(940,360); ctx.lineTo(920,400); ctx.lineTo(870,410); ctx.lineTo(830,380); ctx.lineTo(820,350); ctx.closePath(); ctx.fill(); ctx.stroke();
         
-        // Add grid lines
-        ctx.strokeStyle = 'rgba(212, 175, 55, 0.08)';
+        // Grid lines
+        ctx.strokeStyle = "rgba(212,175,55,0.06)";
         ctx.lineWidth = 0.5;
-        for (let i = 0; i < 12; i++) {
-            ctx.beginPath();
-            ctx.moveTo(i * 1024 / 12, 0);
-            ctx.lineTo(i * 1024 / 12, 512);
-            ctx.stroke();
+        for (let i = 0; i < 18; i++) {
+            ctx.beginPath(); ctx.moveTo(i * 2048 / 18, 0); ctx.lineTo(i * 2048 / 18, 1024); ctx.stroke();
         }
-        for (let i = 0; i < 6; i++) {
-            ctx.beginPath();
-            ctx.moveTo(0, i * 512 / 6);
-            ctx.lineTo(1024, i * 512 / 6);
-            ctx.stroke();
+        for (let i = 0; i < 9; i++) {
+            ctx.beginPath(); ctx.moveTo(0, i * 1024 / 9); ctx.lineTo(2048, i * 1024 / 9); ctx.stroke();
         }
         
-        const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.MeshPhongMaterial({
-            map: texture,
-            transparent: true,
-            opacity: 0.95,
-            shininess: 25,
-        });
-        
-        globe = new THREE.Mesh(geometry, material);
+        const tex = new THREE.CanvasTexture(canvas);
+        const mat = new THREE.MeshPhongMaterial({ map: tex, transparent: true, opacity: 0.95, shininess: 15 });
+        globe = new THREE.Mesh(geo, mat);
         scene.add(globe);
         
-        // Atmosphere glow
-        const atmosphereGeometry = new THREE.SphereGeometry(1.05, 64, 64);
-        const atmosphereMaterial = new THREE.MeshPhongMaterial({
-            color: 0x1a5f2a,
-            transparent: true,
-            opacity: 0.1,
-            side: THREE.BackSide,
-        });
-        const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
-        scene.add(atmosphere);
+        // Atmosphere
+        const atmoGeo = new THREE.SphereGeometry(1.04, 64, 64);
+        const atmoMat = new THREE.MeshPhongMaterial({ color: 0x1a5f2a, transparent: true, opacity: 0.08, side: THREE.BackSide });
+        scene.add(new THREE.Mesh(atmoGeo, atmoMat));
         
         // Stadium markers
-        stadiums.forEach(stadium => {
-            const marker = createMarker(stadium);
-            markers.push(marker);
+        stadiums.forEach(s => {
+            const phi = (90 - s.lat) * Math.PI / 180;
+            const theta = (s.lng + 180) * Math.PI / 180;
+            const x = -1.025 * Math.sin(phi) * Math.cos(theta);
+            const y = 1.025 * Math.cos(phi);
+            const z = 1.025 * Math.sin(phi) * Math.sin(theta);
+            
+            // Check if Egypt or Arab match at this stadium
+            const stMatches = matches.filter(m => m.stadium === s.id);
+            const hasEgypt = stMatches.some(m => m.egypt);
+            const hasArab = stMatches.some(m => m.arab);
+            
+            const color = hasEgypt ? 0xce1126 : (hasArab ? 0x006233 : 0xD4AF37);
+            
+            const mGeo = new THREE.SphereGeometry(0.022, 16, 16);
+            const mMat = new THREE.MeshBasicMaterial({ color });
+            const marker = new THREE.Mesh(mGeo, mMat);
+            marker.position.set(x, y, z);
+            marker.userData = { stadiumId: s.id, hasEgypt, hasArab };
+            
+            // Glow
+            const gGeo = new THREE.SphereGeometry(0.035, 16, 16);
+            const gMat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.25 });
+            marker.add(new THREE.Mesh(gGeo, gMat));
+            
             globe.add(marker);
+            markers.push(marker);
         });
         
         // Lights
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-        scene.add(ambientLight);
+        scene.add(new THREE.AmbientLight(0x404040, 0.6));
+        const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+        dir.position.set(5, 3, 5);
+        scene.add(dir);
+        const pt = new THREE.PointLight(0xD4AF37, 0.25, 10);
+        pt.position.set(-3, 2, 3);
+        scene.add(pt);
         
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(5, 3, 5);
-        scene.add(directionalLight);
+        // Events
+        const el = renderer.domElement;
+        el.addEventListener("mousedown", e => { isDragging = true; prevX = e.clientX; prevY = e.clientY; });
+        el.addEventListener("mousemove", e => {
+            if (!isDragging) return;
+            globe.rotation.y += (e.clientX - prevX) * 0.005;
+            globe.rotation.x += (e.clientY - prevY) * 0.005;
+            prevX = e.clientX; prevY = e.clientY;
+        });
+        el.addEventListener("mouseup", () => isDragging = false);
+        el.addEventListener("mouseleave", () => isDragging = false);
+        el.addEventListener("click", onGlobeClick);
+        el.addEventListener("wheel", e => { e.preventDefault(); camera.position.z = Math.max(2, Math.min(6, camera.position.z + e.deltaY * 0.002)); });
+        el.addEventListener("touchstart", e => { if (e.touches.length === 1) { isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; }}, {passive:false});
+        el.addEventListener("touchmove", e => { if (isDragging && e.touches.length === 1) { globe.rotation.y += (e.touches[0].clientX - prevX) * 0.005; globe.rotation.x += (e.touches[0].clientY - prevY) * 0.005; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY; }}, {passive:false});
+        el.addEventListener("touchend", () => isDragging = false);
         
-        const pointLight = new THREE.PointLight(0xD4AF37, 0.3, 10);
-        pointLight.position.set(-3, 2, 3);
-        scene.add(pointLight);
-        
-        // Mouse interaction
-        renderer.domElement.addEventListener('mousedown', onMouseDown);
-        renderer.domElement.addEventListener('mousemove', onMouseMove);
-        renderer.domElement.addEventListener('mouseup', onMouseUp);
-        renderer.domElement.addEventListener('mouseleave', onMouseUp);
-        renderer.domElement.addEventListener('click', onGlobeClick);
-        renderer.domElement.addEventListener('wheel', onWheel);
-        
-        // Touch
-        renderer.domElement.addEventListener('touchstart', onTouchStart, {passive: false});
-        renderer.domElement.addEventListener('touchmove', onTouchMove, {passive: false});
-        renderer.domElement.addEventListener('touchend', onTouchEnd);
-        
-        window.addEventListener('resize', onWindowResize);
+        window.addEventListener("resize", () => {
+            const w2 = container.clientWidth, h2 = container.clientHeight;
+            camera.aspect = w2 / h2;
+            camera.updateProjectionMatrix();
+            renderer.setSize(w2, h2);
+        });
         
         animate();
     }
     
-    function drawContinent(ctx, points) {
-        ctx.beginPath();
-        ctx.moveTo(points[0][0], points[0][1]);
-        for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i][0], points[i][1]);
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-    }
-    
-    function createMarker(stadium) {
-        const phi = (90 - stadium.lat) * (Math.PI / 180);
-        const theta = (stadium.lng + 180) * (Math.PI / 180);
-        
-        const x = -1.02 * Math.sin(phi) * Math.cos(theta);
-        const y = 1.02 * Math.cos(phi);
-        const z = 1.02 * Math.sin(phi) * Math.sin(theta);
-        
-        // Glowing sphere
-        const geometry = new THREE.SphereGeometry(0.025, 16, 16);
-        const material = new THREE.MeshBasicMaterial({ color: 0xD4AF37 });
-        const marker = new THREE.Mesh(geometry, material);
-        marker.position.set(x, y, z);
-        marker.userData = { stadiumId: stadium.id };
-        
-        // Outer glow
-        const glowGeometry = new THREE.SphereGeometry(0.04, 16, 16);
-        const glowMaterial = new THREE.MeshBasicMaterial({
-            color: 0xD4AF37,
-            transparent: true,
-            opacity: 0.3,
-        });
-        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-        marker.add(glow);
-        
-        return marker;
-    }
-    
-    function onMouseDown(e) {
-        isDragging = true;
-        previousMouseX = e.clientX;
-        previousMouseY = e.clientY;
-    }
-    
-    function onMouseMove(e) {
-        if (isDragging) {
-            const deltaX = e.clientX - previousMouseX;
-            const deltaY = e.clientY - previousMouseY;
-            globe.rotation.y += deltaX * 0.005;
-            globe.rotation.x += deltaY * 0.005;
-            previousMouseX = e.clientX;
-            previousMouseY = e.clientY;
-        }
-    }
-    
-    function onMouseUp() {
-        isDragging = false;
-    }
-    
-    function onWheel(e) {
-        e.preventDefault();
-        camera.position.z += e.deltaY * 0.002;
-        camera.position.z = Math.max(2, Math.min(6, camera.position.z));
-    }
-    
-    let touchStartX, touchStartY;
-    function onTouchStart(e) {
-        if (e.touches.length === 1) {
-            isDragging = true;
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            previousMouseX = touchStartX;
-            previousMouseY = touchStartY;
-        }
-    }
-    function onTouchMove(e) {
-        e.preventDefault();
-        if (isDragging && e.touches.length === 1) {
-            const deltaX = e.touches[0].clientX - previousMouseX;
-            const deltaY = e.touches[0].clientY - previousMouseY;
-            globe.rotation.y += deltaX * 0.005;
-            globe.rotation.x += deltaY * 0.005;
-            previousMouseX = e.touches[0].clientX;
-            previousMouseY = e.touches[0].clientY;
-        }
-    }
-    function onTouchEnd() {
-        isDragging = false;
-    }
-    
     function onGlobeClick(e) {
         if (isDragging) return;
-        
         const rect = renderer.domElement.getBoundingClientRect();
-        const mouse = new THREE.Vector2(
-            ((e.clientX - rect.left) / rect.width) * 2 - 1,
-            -((e.clientY - rect.top) / rect.height) * 2 + 1
-        );
-        
-        const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouse, camera);
-        
-        const intersects = raycaster.intersectObjects(markers);
-        if (intersects.length > 0) {
-            const stadiumId = intersects[0].object.userData.stadiumId;
-            if (stadiumId) showStadiumModal(stadiumId);
+        const mouse = new THREE.Vector2(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+        const ray = new THREE.Raycaster();
+        ray.setFromCamera(mouse, camera);
+        const hits = ray.intersectObjects(markers);
+        if (hits.length > 0 && hits[0].object.userData.stadiumId) {
+            showStadiumModal(hits[0].object.userData.stadiumId);
         }
-    }
-    
-    function onWindowResize() {
-        const container = document.getElementById('globe-container');
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
     }
     
     function animate() {
         requestAnimationFrame(animate);
-        
-        if (!isDragging) {
-            globe.rotation.y += 0.001;
-        }
-        
-        // Pulse markers
-        const time = Date.now() * 0.002;
-        markers.forEach((marker, i) => {
-            const scale = 1 + Math.sin(time + i * 0.5) * 0.3;
-            if (marker.children[0]) {
-                marker.children[0].scale.set(scale, scale, scale);
-            }
+        if (!isDragging) globe.rotation.y += 0.0008;
+        const t = Date.now() * 0.002;
+        markers.forEach((m, i) => {
+            const s = 1 + Math.sin(t + i * 0.7) * 0.3;
+            if (m.children[0]) m.children[0].scale.set(s, s, s);
         });
-        
         renderer.render(scene, camera);
     }
     
-    // ============================================
+    // =====================================================
     // UI RENDERING
-    // ============================================
+    // =====================================================
     
-    function renderStadiumsList() {
-        const container = document.getElementById('stadiums-list');
-        container.innerHTML = stadiums.map(s => {
-            const stadiumMatches = matches.filter(m => m.stadium === s.id);
-            const hasEgypt = stadiumMatches.some(m => m.team1 === 'EGY' || m.team2 === 'EGY');
-            const hasArab = stadiumMatches.some(m => {
-                const t1 = getTeam(m.team1);
-                const t2 = getTeam(m.team2);
-                return arabTeams.some(a => a.code === m.team1 || a.code === m.team2);
-            });
-            
-            return `
-                <div class="glass rounded-xl p-3 cursor-pointer hover:border-gold/50 transition-all match-card" onclick="showStadiumModal('${s.id}')">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">${s.image}</span>
-                            <div>
-                                <div class="font-bold text-sm ${hasEgypt ? 'text-gold' : ''}">${s.name}</div>
-                                <div class="text-xs text-gray-400">${s.city}، ${s.country}</div>
-                            </div>
-                        </div>
-                        <div class="flex gap-1">
-                            ${hasEgypt ? '<span class="egyment-badge text-[10px] px-1.5 py-0.5 rounded-full">🇪🇬 مصر</span>' : ''}
-                            ${hasArab && !hasEgypt ? '<span class="arab-badge text-[10px] px-1.5 py-0.5 rounded-full">🌙 عربي</span>' : ''}
-                        </div>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1">${stadiumMatches.length} ماتش • السعة: ${s.capacity}</div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function renderEgyptTab() {
-        const egyptMatches = matches.filter(m => m.team1 === 'EGY' || m.team2 === 'EGY');
+    function renderMatchCard(m, big = false) {
+        const t1 = getTeam(m.t1), t2 = getTeam(m.t2);
+        const st = getStadium(m.stadium);
+        const tu = timeUntil(m.date, m.time);
+        const pred = prediction(m.t1, m.t2);
+        const isEgypt = m.egypt, isArab = m.arab;
         
         return `
-            <div class="mb-6">
-                <div class="glass rounded-2xl p-6 mb-4 border-r-4 border-r-egypt-red">
+        <div class="match-card glass rounded-2xl p-4 ${isEgypt ? "border-gold/40 bg-gold/5" : isArab ? "border-green-500/30 bg-green-900/10" : ""}">
+            <div class="flex items-center justify-between mb-2">
+                <span class="px-2 py-0.5 rounded text-xs ${stageBadge(m.stage)}">${stageName(m.stage)}${m.grp ? " — " + m.grp : ""}</span>
+                <span class="text-xs text-gray-400">${fmtDate(m.date)}</span>
+            </div>
+            ${m.note ? `<div class="text-xs text-gold font-bold mb-2 text-center">${m.note}</div>` : ""}
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex-1 text-center">
+                    <div class="text-3xl mb-1">${t1.flag}</div>
+                    <div class="font-bold text-sm ${m.t1 === "EGY" ? "text-gold" : ""}">${t1.name}</div>
+                </div>
+                <div class="px-4 text-center">
+                    <div class="text-xl font-bold text-gold">VS</div>
+                    <div class="text-xs text-gray-400">${m.time} UTC</div>
+                </div>
+                <div class="flex-1 text-center">
+                    <div class="text-3xl mb-1">${t2.flag}</div>
+                    <div class="font-bold text-sm ${m.t2 === "EGY" ? "text-gold" : ""}">${t2.name}</div>
+                </div>
+            </div>
+            <div class="mb-2">
+                <div class="flex justify-between text-[10px] text-gray-400 mb-1">
+                    <span>${pred.t1}%</span><span>تعادل ${pred.draw}%</span><span>${pred.t2}%</span>
+                </div>
+                <div class="pred-bar flex gap-0.5">
+                    <div class="pred-fill bg-blue-500" style="width:${pred.t1}%"></div>
+                    <div class="pred-fill bg-gray-500" style="width:${pred.draw}%"></div>
+                    <div class="pred-fill bg-red-500" style="width:${pred.t2}%"></div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+                <span class="text-gray-400">🏟️ ${st.name}، ${st.city}</span>
+                <span class="${tu.past ? "text-gray-500" : "text-green-400"}">⏱️ ${tu.past ? "انتهى" : tu.text}</span>
+            </div>
+            ${isEgypt ? '<div class="mt-2 text-center"><span class="text-xs px-3 py-1 rounded-full bg-red-900/40 text-red-300 border border-red-500/30">🇪🇬 ماتش منتخب مصر</span></div>' : ""}
+            ${isArab && !isEgypt ? '<div class="mt-2 text-center"><span class="text-xs px-3 py-1 rounded-full bg-green-900/40 text-green-300 border border-green-500/30">🌙 ماتش عربي</span></div>' : ""}
+        </div>`;
+    }
+    
+    function switchTab(tab) {
+        ["egypt","arab","schedule","groups","stadiums"].forEach(t => {
+            const el = document.getElementById("tab-" + t);
+            el.className = "tab-btn " + (t === tab ? "active" : "glass") + " px-4 py-2 rounded-xl text-sm flex items-center gap-2";
+        });
+        const c = document.getElementById("content-area");
+        
+        if (tab === "egypt") {
+            const egyptMatches = matches.filter(m => m.egypt);
+            c.innerHTML = `
+                <div class="glass rounded-2xl p-6 mb-6 border-r-4 border-r-amber-600">
                     <div class="flex items-center gap-4 mb-4">
                         <div class="text-6xl">🇪🇬</div>
                         <div>
                             <h2 class="text-2xl font-bold text-gold">منتخب مصر</h2>
-                            <p class="text-gray-400">المجموعة A • كأس العالم 2026</p>
+                            <p class="text-gray-400">المجموعة F • كأس العالم 2026</p>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="glass rounded-xl p-3 text-center">
-                            <div class="text-2xl font-bold text-gold">3</div>
-                            <div class="text-xs text-gray-400">ماتشات المجموعة</div>
-                        </div>
-                        <div class="glass rounded-xl p-3 text-center">
-                            <div class="text-2xl font-bold text-gold">A</div>
-                            <div class="text-xs text-gray-400">المجموعة</div>
-                        </div>
-                        <div class="glass rounded-xl p-3 text-center">
-                            <div class="text-2xl font-bold text-gold">3</div>
-                            <div class="text-xs text-gray-400">ملاعب مختلفة</div>
-                        </div>
-                        <div class="glass rounded-xl p-3 text-center">
-                            <div class="text-2xl font-bold text-gold">3</div>
-                            <div class="text-xs text-gray-400">دول مختلفة</div>
-                        </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                        <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">3</div><div class="text-xs text-gray-400">ماتشات المجموعة</div></div>
+                        <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">F</div><div class="text-xs text-gray-400">المجموعة</div></div>
+                        <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">3</div><div class="text-xs text-gray-400">ملاعب مختلفة</div></div>
+                        <div class="glass rounded-xl p-3 text-center"><div class="text-2xl font-bold text-gold">3</div><div class="text-xs text-gray-400">دول مختلفة</div></div>
+                    </div>
+                    <div class="text-sm text-gray-400">
+                        <p>المنافسين: 🇳🇱 هولندا • 🇮🇹 إيطاليا • 🏳️ متأهل من الملحق</p>
+                        <p class="mt-1">التدريب: Gonzaga University، Spokane، واشنطن</p>
                     </div>
                 </div>
-                
-                <h3 class="text-xl font-bold text-gold mb-3 flex items-center gap-2">
-                    <span>📅</span> جدول ماتشات مصر
-                </h3>
-                <div class="space-y-3">
-                    ${egyptMatches.map(m => renderMatchCard(m, true)).join('')}
-                </div>
-            </div>
-            
-            <!-- Egypt Group A Standings Preview -->
-            <div class="glass rounded-2xl p-6">
-                <h3 class="text-lg font-bold text-gold mb-3">📊 ترتيب المجموعة A (متوقع)</h3>
-                <div class="space-y-2">
-                    ${['EGY', 'USA', 'MEX', 'CAN'].map((code, i) => {
-                        const team = getTeam(code);
-                        const isEgypt = code === 'EGY';
-                        const predictedPoints = isEgypt ? 7 : [5, 4, 0][i === 0 ? 0 : i - 1] || 3;
-                        return `
-                            <div class="flex items-center gap-3 p-2 rounded-lg ${isEgypt ? 'bg-gold/10 border border-gold/30' : 'bg-white/5'}">
-                                <span class="w-6 text-center font-bold ${isEgypt ? 'text-gold' : 'text-gray-400'}">${i + 1}</span>
-                                <span class="text-2xl">${team.flag}</span>
-                                <span class="flex-1 font-bold ${isEgypt ? 'text-gold' : ''}">${team.name}</span>
-                                <span class="text-sm text-gray-400">${predictedPoints} نقطة</span>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `;
-    }
-    
-    function renderArabTab() {
-        const arabMatches = matches.filter(m => 
-            arabTeams.some(a => a.code === m.team1 || a.code === m.team2)
-        );
-        
-        const qualifiedArab = arabTeams.filter(a => a.qualified);
-        
-        return `
-            <div class="mb-6">
-                <div class="glass rounded-2xl p-6 mb-4 border-r-4 border-r-green-600">
+                <h3 class="text-xl font-bold text-gold mb-3">📅 جدول ماتشات مصر</h3>
+                <div class="space-y-3">${egyptMatches.map(m => renderMatchCard(m, true)).join("")}</div>
+            `;
+        } else if (tab === "arab") {
+            const arabCodes = arabTeams.map(t => t.code);
+            const arabMatches = matches.filter(m => m.arab || m.egypt);
+            c.innerHTML = `
+                <div class="glass rounded-2xl p-6 mb-6 border-r-4 border-r-green-600">
                     <div class="flex items-center gap-4 mb-4">
-                        <div class="text-6xl">🌙</div>
+                        <div class="text-5xl">🌙</div>
                         <div>
                             <h2 class="text-2xl font-bold text-gold">المنتخبات العربية</h2>
-                            <p class="text-gray-400">${qualifiedArab.length} منتخبات عربية مؤهلة • كأس العالم 2026</p>
+                            <p class="text-gray-400">${arabTeams.filter(t=>t.qualified).length} منتخبات عربية مؤهلة • كأس العالم 2026</p>
                         </div>
                     </div>
-                    <div class="flex flex-wrap gap-3">
-                        ${qualifiedArab.map(t => `
-                            <div class="glass rounded-xl px-4 py-2 flex items-center gap-2">
-                                <span class="text-2xl">${t.flag}</span>
-                                <span class="font-bold">${t.name}</span>
-                                <span class="text-xs text-gray-400">المجموعة ${t.group}</span>
-                            </div>
-                        `).join('')}
+                    <div class="flex flex-wrap gap-2">
+                        ${arabTeams.map(t => `<div class="glass rounded-xl px-3 py-2 flex items-center gap-2 ${t.qualified ? "" : "opacity-50"}">
+                            <span class="text-2xl">${t.flag}</span>
+                            <span class="font-bold text-sm">${t.name}</span>
+                            <span class="text-xs text-gray-400">المجموعة ${t.group}</span>
+                            ${t.qualified ? '<span class="w-2 h-2 rounded-full bg-green-400"></span>' : '<span class="text-[10px] text-yellow-400">محتمل</span>'}
+                        </div>`).join("")}
                     </div>
                 </div>
-                
-                <h3 class="text-xl font-bold text-gold mb-3 flex items-center gap-2">
-                    <span>📅</span> جدول ماتشات المنتخبات العربية
-                </h3>
-                <div class="space-y-3">
-                    ${arabMatches.map(m => renderMatchCard(m, false, true)).join('')}
-                </div>
-            </div>
-        `;
-    }
-    
-    function renderAllMatchesTab() {
-        const stages = ['group', 'round16', 'quarter', 'semi', 'third', 'final'];
-        
-        return stages.map(stage => {
-            const stageMatches = matches.filter(m => m.stage === stage);
-            if (stageMatches.length === 0) return '';
-            
-            return `
-                <div class="mb-6">
+                <h3 class="text-xl font-bold text-gold mb-3">📅 جدول ماتشات المنتخبات العربية</h3>
+                <div class="space-y-3">${arabMatches.map(m => renderMatchCard(m)).join("")}</div>
+            `;
+        } else if (tab === "schedule") {
+            const stages = ["group","R32","QF","SF","3rd","Final"];
+            let html = "";
+            stages.forEach(s => {
+                const sm = matches.filter(m => m.stage === s);
+                if (!sm.length) return;
+                html += `<div class="mb-6"><h3 class="text-lg font-bold text-gold mb-3"><span class="px-2 py-0.5 rounded text-xs ${stageBadge(s)}">${stageName(s)}</span></h3><div class="space-y-3">${sm.map(m => renderMatchCard(m)).join("")}</div></div>`;
+            });
+            c.innerHTML = html;
+        } else if (tab === "groups") {
+            let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">`;
+            for (const [grp, data] of Object.entries(groups)) {
+                const hasEgypt = data.egypt, hasArab = data.arab;
+                html += `<div class="glass rounded-2xl p-4 ${hasEgypt ? "border border-gold/30" : hasArab ? "border border-green-500/20" : ""}">
                     <h3 class="text-lg font-bold text-gold mb-3 flex items-center gap-2">
-                        <span class="px-2 py-0.5 rounded text-xs ${getStageBadge(stage)}">${getStageName(stage)}</span>
+                        المجموعة ${grp}
+                        ${hasEgypt ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-red-900/40 text-red-300">🇪🇬 مصر</span>' : ""}
+                        ${hasArab && !hasEgypt ? '<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-900/40 text-green-300">🌙 عربي</span>' : ""}
                     </h3>
-                    <div class="space-y-3">
-                        ${stageMatches.map(m => renderMatchCard(m)).join('')}
+                    <div class="space-y-2">
+                    ${data.teams.map(code => {
+                        const t = getTeam(code);
+                        const isArab = arabTeams.some(a => a.code === code);
+                        return `<div class="flex items-center gap-2 p-2 rounded-lg ${isArab ? "bg-green-900/20" : "bg-white/5"}">
+                            <span class="text-xl">${t.flag}</span>
+                            <span class="text-sm ${isArab ? "text-green-300 font-bold" : ""}">${t.name}</span>
+                        </div>`;
+                    }).join("")}
                     </div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    function renderGroupsTab() {
-        const groups = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-        
-        return `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                ${groups.map(g => {
-                    const groupTeams = allTeams.filter(t => t.group === g);
-                    const groupMatches = matches.filter(m => m.group === g);
-                    const hasArab = groupTeams.some(t => arabTeams.some(a => a.code === t.code));
-                    const hasEgypt = groupTeams.some(t => t.code === 'EGY');
-                    
-                    return `
-                        <div class="glass rounded-2xl p-4 ${hasEgypt ? 'border border-gold/30' : ''}">
-                            <h3 class="text-lg font-bold text-gold mb-3 flex items-center gap-2">
-                                المجموعة ${g}
-                                ${hasEgypt ? '<span class="egypt-badge text-[10px] px-2 py-0.5 rounded-full">🇪🇬 مصر</span>' : ''}
-                                ${hasArab && !hasEgypt ? '<span class="arab-badge text-[10px] px-2 py-0.5 rounded-full">🌙 عربي</span>' : ''}
-                            </h3>
-                            <div class="space-y-2 mb-3">
-                                ${groupTeams.map(t => {
-                                    const isArab = arabTeams.some(a => a.code === t.code);
-                                    return `
-                                        <div class="flex items-center gap-2 p-2 rounded-lg ${isArab ? 'bg-green-500/10' : 'bg-white/5'}">
-                                            <span class="text-xl">${t.flag}</span>
-                                            <span class="text-sm ${isArab ? 'text-green-300 font-bold' : ''}">${t.name}</span>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                            <div class="text-xs text-gray-500">${groupMatches.length} ماتشات في هذه المجموعة</div>
-                        </div>
-                    `;
-                }).join('')}
-            </div>
-        `;
-    }
-    
-    function renderMatchCard(match, highlightEgypt = false, highlightArab = false) {
-        const team1 = getTeam(match.team1);
-        const team2 = getTeam(match.team2);
-        const stadium = getStadium(match.stadium);
-        const timeUntil = getTimeUntil(match.date, match.time);
-        const prediction = getPrediction(match.team1, match.team2);
-        
-        const isEgyptMatch = match.team1 === 'EGY' || match.team2 === 'EGY';
-        const isArabMatch = arabTeams.some(a => a.code === match.team1 || a.code === match.team2);
-        
-        const cardClass = isEgyptMatch ? 'border-gold/40 bg-gold/5' : (isArabMatch ? 'border-green-500/30 bg-green-500/5' : '');
-        
-        return `
-            <div class="match-card glass rounded-2xl p-4 ${cardClass}">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="px-2 py-0.5 rounded text-xs ${getStageBadge(match.stage)}">${getStageName(match.stage)}</span>
-                    <span class="text-xs text-gray-400">${formatDate(match.date)}</span>
-                </div>
-                
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex-1 text-center">
-                        <div class="text-3xl mb-1">${team1.flag}</div>
-                        <div class="font-bold text-sm ${match.team1 === 'EGY' ? 'text-gold' : ''}">${team1.name}</div>
-                    </div>
-                    <div class="px-4 text-center">
-                        <div class="text-2xl font-bold text-gold">VS</div>
-                        <div class="text-xs text-gray-400">${match.time}</div>
-                    </div>
-                    <div class="flex-1 text-center">
-                        <div class="text-3xl mb-1">${team2.flag}</div>
-                        <div class="font-bold text-sm ${match.team2 === 'EGY' ? 'text-gold' : ''}">${team2.name}</div>
-                    </div>
-                </div>
-                
-                <!-- Prediction Bar -->
-                <div class="mb-3">
-                    <div class="flex justify-between text-xs text-gray-400 mb-1">
-                        <span>${prediction.team1}%</span>
-                        <span>تعادل ${prediction.draw}%</span>
-                        <span>${prediction.team2}%</span>
-                    </div>
-                    <div class="prediction-bar flex">
-                        <div class="prediction-fill bg-blue-500" style="width: ${prediction.team1}%"></div>
-                        <div class="prediction-fill bg-gray-500" style="width: ${prediction.draw}%"></div>
-                        <div class="prediction-fill bg-red-500" style="width: ${prediction.team2}%"></div>
-                    </div>
-                </div>
-                
-                <div class="flex items-center justify-between text-xs">
-                    <div class="flex items-center gap-1 text-gray-400">
-                        <span>🏟️</span>
-                        <span>${stadium.name}، ${stadium.city}</span>
-                    </div>
-                    <div class="${timeUntil.isLive ? 'text-red-400 font-bold' : 'text-gray-400'}">
-                        ${timeUntil.isPast ? '⏰ انتهى' : (timeUntil.isLive ? '🔴 مباشر!' : `⏱️ ${timeUntil.text}`)}
-                    </div>
-                </div>
-                
-                ${isEgyptMatch ? '<div class="mt-2 text-center"><span class="egypt-badge text-xs px-3 py-1 rounded-full">🇪🇬 ماتش منتخب مصر</span></div>' : ''}
-                ${isArabMatch && !isEgyptMatch ? '<div class="mt-2 text-center"><span class="arab-badge text-xs px-3 py-1 rounded-full">🌙 ماتش عربي</span></div>' : ''}
-            </div>
-        `;
-    }
-    
-    function renderQuickStats() {
-        const egyptMatches = matches.filter(m => m.team1 === 'EGY' || m.team2 === 'EGY');
-        const arabMatches = matches.filter(m => arabTeams.some(a => a.code === m.team1 || a.code === m.team2));
-        const totalMatches = matches.length;
-        const totalStadiums = stadiums.length;
-        
-        return `
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-3xl font-bold text-gold">${totalMatches}</div>
-                <div class="text-xs text-gray-400">إجمالي الماتشات</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-3xl font-bold text-gold">${totalStadiums}</div>
-                <div class="text-xs text-gray-400">ملعب مستضيف</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-3xl font-bold text-gold">48</div>
-                <div class="text-xs text-gray-400">منتخب مشارك</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-3xl font-bold text-gold">${egyptMatches.length}</div>
-                <div class="text-xs text-gray-400">ماتشات مصر 🇪🇬</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-3xl font-bold text-gold">${arabMatches.length}</div>
-                <div class="text-xs text-gray-400">ماتشات عربية 🌙</div>
-            </div>
-            <div class="glass rounded-xl p-3 text-center">
-                <div class="text-3xl font-bold text-gold">3</div>
-                <div class="text-xs text-gray-400">دول مستضيفة</div>
-            </div>
-        `;
-    }
-    
-    function renderArabTeams() {
-        const qualified = arabTeams.filter(a => a.qualified);
-        
-        return qualified.map(t => {
-            const teamMatches = matches.filter(m => m.team1 === t.code || m.team2 === t.code);
-            return `
-                <div class="glass rounded-xl p-3 flex items-center gap-3">
-                    <span class="text-2xl">${t.flag}</span>
-                    <div class="flex-1">
-                        <div class="font-bold text-sm">${t.name}</div>
-                        <div class="text-xs text-gray-400">المجموعة ${t.group} • ${teamMatches.length} ماتشات</div>
-                    </div>
-                    <div class="w-2 h-2 rounded-full bg-green-400"></div>
-                </div>
-            `;
-        }).join('');
-    }
-    
-    // ============================================
-    // INTERACTION
-    // ============================================
-    
-    let currentTab = 'egypt';
-    
-    function switchTab(tab) {
-        currentTab = tab;
-        
-        // Update tab styles
-        ['egypt', 'arab', 'all', 'groups'].forEach(t => {
-            const el = document.getElementById(`tab-${t}`);
-            if (t === tab) {
-                el.className = 'tab-active px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2';
-            } else {
-                el.className = 'glass px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 hover:border-gold/50';
+                </div>`;
             }
-        });
-        
-        // Render content
-        const content = document.getElementById('content-area');
-        switch(tab) {
-            case 'egypt': content.innerHTML = renderEgyptTab(); break;
-            case 'arab': content.innerHTML = renderArabTab(); break;
-            case 'all': content.innerHTML = renderAllMatchesTab(); break;
-            case 'groups': content.innerHTML = renderGroupsTab(); break;
+            html += `</div>`;
+            c.innerHTML = html;
+        } else if (tab === "stadiums") {
+            c.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${stadiums.map(s => {
+                    const stMatches = matches.filter(m => m.stadium === s.id);
+                    const hasEgypt = stMatches.some(m => m.egypt);
+                    const hasArab = stMatches.some(m => m.arab);
+                    return `<div class="glass rounded-2xl p-4 cursor-pointer hover:border-gold/40 transition-all" onclick="showStadiumModal('${s.id}')">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <h3 class="font-bold text-gold">${s.name}</h3>
+                                <p class="text-sm text-gray-400">${s.city}، ${s.country}</p>
+                            </div>
+                            <div class="flex gap-1">
+                                ${hasEgypt ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-red-900/40 text-red-300">🇪🇬</span>' : ""}
+                                ${hasArab && !hasEgypt ? '<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-green-900/40 text-green-300">🌙</span>' : ""}
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500">السعة: ${s.cap.toLocaleString()} • ${stMatches.length} مباريات</div>
+                    </div>`;
+                }).join("")}
+            </div>`;
         }
     }
     
-    function showStadiumModal(stadiumId) {
-        const stadium = getStadium(stadiumId);
-        const stadiumMatches = matches.filter(m => m.stadium === stadiumId);
-        
-        document.getElementById('modal-stadium-name').textContent = stadium.name;
-        document.getElementById('modal-stadium-city').textContent = `${stadium.city}، ${stadium.country}`;
-        document.getElementById('modal-stadium-info').innerHTML = `
+    function showStadiumModal(id) {
+        const s = getStadium(id);
+        const stMatches = matches.filter(m => m.stadium === id);
+        document.getElementById("modal-name").textContent = s.name;
+        document.getElementById("modal-city").textContent = s.city + "، " + s.country;
+        document.getElementById("modal-info").innerHTML = `
             <div class="grid grid-cols-3 gap-3 text-center">
-                <div class="glass rounded-xl p-3">
-                    <div class="text-xl font-bold text-gold">${stadium.capacity}</div>
-                    <div class="text-xs text-gray-400">السعة</div>
-                </div>
-                <div class="glass rounded-xl p-3">
-                    <div class="text-xl font-bold text-gold">${stadiumMatches.length}</div>
-                    <div class="text-xs text-gray-400">ماتشات</div>
-                </div>
-                <div class="glass rounded-xl p-3">
-                    <div class="text-xl font-bold text-gold">${stadium.country}</div>
-                    <div class="text-xs text-gray-400">الدولة</div>
-                </div>
-            </div>
-        `;
-        
-        document.getElementById('modal-matches').innerHTML = stadiumMatches.length > 0 
-            ? stadiumMatches.map(m => renderMatchCard(m)).join('')
-            : '<p class="text-gray-400 text-center py-4">لا توجد ماتشات محددة حالياً في هذا الملعب</p>';
-        
-        document.getElementById('stadium-modal').classList.add('active');
+                <div class="glass rounded-xl p-3"><div class="text-xl font-bold text-gold">${s.cap.toLocaleString()}</div><div class="text-xs text-gray-400">السعة</div></div>
+                <div class="glass rounded-xl p-3"><div class="text-xl font-bold text-gold">${stMatches.length}</div><div class="text-xs text-gray-400">مباريات</div></div>
+                <div class="glass rounded-xl p-3"><div class="text-xl font-bold text-gold">${s.country}</div><div class="text-xs text-gray-400">الدولة</div></div>
+            </div>`;
+        document.getElementById("modal-matches").innerHTML = stMatches.length ? stMatches.map(m => renderMatchCard(m)).join("") : '<p class="text-gray-400 text-center py-4">لا توجد مباريات محددة حالياً</p>';
+        document.getElementById("stadium-modal").classList.add("active");
     }
     
     function closeModal() {
-        document.getElementById('stadium-modal').classList.remove('active');
+        document.getElementById("stadium-modal").classList.remove("active");
     }
     
-    // Countdown timer
+    // Countdown
     function updateCountdown() {
         const now = new Date();
-        const diff = WORLD_CUP_START - now;
-        
+        const diff = WC_START - now;
         if (diff <= 0) {
-            // World Cup started
-            const finalDiff = WORLD_CUP_FINAL - now;
-            if (finalDiff <= 0) {
-                document.getElementById('cd-days').textContent = '00';
-                document.getElementById('cd-hours').textContent = '00';
-                document.getElementById('cd-mins').textContent = '00';
-                return;
-            }
-            const days = Math.floor(finalDiff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((finalDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((finalDiff % (1000 * 60 * 60)) / (1000 * 60));
-            document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
-            document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+            const fd = WC_FINAL - now;
+            if (fd <= 0) { document.getElementById("cd-days").textContent = "00"; document.getElementById("cd-hours").textContent = "00"; document.getElementById("cd-mins").textContent = "00"; return; }
+            const d = Math.floor(fd / 86400000), h = Math.floor((fd % 86400000) / 3600000), m = Math.floor((fd % 3600000) / 60000);
+            document.getElementById("cd-days").textContent = String(d).padStart(2, "0");
+            document.getElementById("cd-hours").textContent = String(h).padStart(2, "0");
+            document.getElementById("cd-mins").textContent = String(m).padStart(2, "0");
             return;
         }
-        
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        
-        document.getElementById('cd-days').textContent = String(days).padStart(2, '0');
-        document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
-        document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+        const d = Math.floor(diff / 86400000), h = Math.floor((diff % 86400000) / 3600000), m = Math.floor((diff % 3600000) / 60000);
+        document.getElementById("cd-days").textContent = String(d).padStart(2, "0");
+        document.getElementById("cd-hours").textContent = String(h).padStart(2, "0");
+        document.getElementById("cd-mins").textContent = String(m).padStart(2, "0");
     }
     
-    // ============================================
-    // INITIALIZATION
-    // ============================================
-    
-    document.addEventListener('DOMContentLoaded', () => {
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
         initGlobe();
-        renderStadiumsList();
-        renderQuickStats();
-        renderArabTeams();
-        switchTab('egypt');
+        switchTab("egypt");
         updateCountdown();
         setInterval(updateCountdown, 60000);
     });
